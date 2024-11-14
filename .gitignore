@@ -1,3 +1,4 @@
 checkpoints/*.pth
-data/test
-data/train
+!checkpoints/
+data/test/
+data/train/
