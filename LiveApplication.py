@@ -6,7 +6,7 @@ from picamera.array import PiRGBArray
 from picamera import PiCamera
 import cv2
 import time
-from main_class import SimpleObjectDetector
+from main import SimpleObjectDetector
 from typing import List
 
 class ApplicationHandler:
