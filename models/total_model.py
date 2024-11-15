@@ -78,8 +78,6 @@ class SPP(nn.Module):
         x = torch.cat([x, self.pool1(x), self.pool2(x), self.pool3(x)], dim=1)
         return x
 
-
-
 class YOLOv4Backbone(nn.Module):
     def __init__(self):
         super(YOLOv4Backbone, self).__init__()
@@ -99,8 +97,6 @@ class YOLOv4Backbone(nn.Module):
         spp_out = self.spp(out5)  # SPP 결과 반환
         return out3, out4, spp_out  # 다양한 크기의 피처 맵 반환
 
-
-
 class YOLOv4Head(nn.Module):
     def __init__(self, num_classes):
         super(YOLOv4Head, self).__init__()
@@ -115,9 +111,6 @@ class YOLOv4Head(nn.Module):
         pan_features = self.pan(fpn_features)
         outputs = [layer(p) for layer, p in zip(self.yolo_layers, pan_features)]
         return outputs
-
-import torch
-import numpy as np
 
 class YOLOPostProcessor:
     def __init__(self, conf_threshold=0.5, iou_threshold=0.4, input_dim=416):
