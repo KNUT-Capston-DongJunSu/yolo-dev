@@ -3,11 +3,11 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torch.utils.data import DataLoader
 import torch.optim as optim
-from model.simple_object_detector import SimpleObjectDetector
+from model_YOLO.YoloV4 import YOLOv4  # YOLO 스타일의 모델을 정의
 from dataset.customdataset import CustomDetectionDataset
 from torchvision import transforms
 import numpy as np
-from typing import List, Tuple, Dict
+from typing import List, Dict
 
 class Main:
     dataset_path: str = 'path/to/images'
@@ -18,14 +18,16 @@ class Main:
         self.num_epochs = num_epochs
         self.get_data()
 
-        # 모델 인스턴스화 및 손실 함수, 옵티마이저 정의
-        self.model = SimpleObjectDetector(num_classes=3)
+        # YOLO 모델 초기화
+        self.model = YOLOv4(num_classes=1, input_dim=416)  # YOLOv4 모델
         self.optimizer = optim.Adam(self.model.parameters(), lr=0.001)
 
     def get_data(self) -> None:
         # 데이터 로더 설정
         data_transforms = transforms.Compose([
-            transforms.Resize((224, 224)),
+            transforms.Resize((416, 416)),  # YOLO 모델에 맞게 입력 크기 조정
+            transforms.ColorJitter(brightness=0.2, contrast=0.2, saturation=0.2, hue=0.1),  # 데이터 증강
+            transforms.RandomHorizontalFlip(),
             transforms.ToTensor(),
             transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
         ])
@@ -47,6 +49,7 @@ class Main:
         self.test_loader = DataLoader(
             test_dataset, batch_size=1, shuffle=False, collate_fn=lambda x: tuple(zip(*x))
         )
+
     
     def train(self) -> None:
         # 모델 훈련 루프
@@ -57,21 +60,53 @@ class Main:
             for images, targets in self.train_loader:
                 self.optimizer.zero_grad()
                 
-                # 모델 예측 수행
-                proposals = self.generate_proposals(images)
-                cls_scores, bbox_preds, objectness, bbox_deltas = self.model(images, proposals)
+                # 예측 수행
+                predictions = self.model(images)
                 
-                # 총 손실 계산 및 역전파
-                total_loss = self.compute_loss(cls_scores, bbox_preds, objectness, bbox_deltas, targets)
+                # 손실 계산
+                total_loss = self.compute_loss(predictions, targets)
                 total_loss.backward()
                 self.optimizer.step()
                 
                 cumulative_loss += total_loss.item()
 
             print(f"Epoch [{epoch + 1}/{self.num_epochs}], Loss: {cumulative_loss / len(self.train_loader)}")
+            
+            # 검증 수행
+            self.validate()
 
         # 모델 저장
         torch.save(self.model.state_dict(), 'trained_detector.pth')
+
+    def validate(self) -> None:
+        self.model.eval()  # 평가 모드로 설정
+        ious: List[float] = []  # IoU 점수를 저장할 리스트
+        total_loss = 0
+
+        with torch.no_grad():
+            for images, targets in self.test_loader:
+                images = images[0]
+                targets = targets[0]
+                
+                # 예측 수행
+                predictions = self.model(images)
+                
+                # 손실 계산
+                total_loss += self.compute_loss(predictions, targets).item()
+                
+                # 후처리로 NMS 적용 후 결과 얻기
+                post_processor = YOLOPostProcessor(conf_threshold=0.5, iou_threshold=0.4, input_dim=416)
+                final_boxes = post_processor.process_predictions(predictions, original_img_shape=images.shape[2:])
+                
+                # IoU 계산
+                for pred_box, true_box in zip(final_boxes, targets['boxes']):
+                    iou = self.calculate_iou(pred_box, true_box.numpy())
+                    ious.append(iou)
+        
+        # 평균 손실과 평균 IoU 출력
+        mean_loss = total_loss / len(self.test_loader)
+        mean_iou = np.mean(ious)
+        print(f"Validation Loss: {mean_loss}, Mean IoU: {mean_iou}")
 
     def test(self) -> None:
         self.model.load_state_dict(torch.load('trained_detector.pth'))
@@ -84,17 +119,16 @@ class Main:
             targets = targets[0]
             
             with torch.no_grad():
-                # 모델 예측 수행
-                proposals = self.generate_proposals(images)
-                cls_scores, bbox_preds, objectness, bbox_deltas = self.model(images, proposals)
+                # 예측 수행
+                predictions = self.model(images)
                 
-                # 예측된 바운딩 박스와 정답 바운딩 박스의 IoU 계산
-                pred_boxes = bbox_preds.squeeze().numpy()
-                true_boxes = targets['boxes'].squeeze().numpy()
+                # 후처리로 NMS 적용 후 결과 얻기
+                post_processor = YOLOPostProcessor(conf_threshold=0.5, iou_threshold=0.4, input_dim=416)
+                final_boxes = post_processor.process_predictions(predictions, original_img_shape=images.shape[2:])
                 
-                # 각 예측과 정답에 대해 IoU 계산
-                for pred_box, true_box in zip(pred_boxes, true_boxes):
-                    iou = self.calculate_iou(pred_box, true_box)
+                # IoU 계산
+                for pred_box, true_box in zip(final_boxes, targets['boxes']):
+                    iou = self.calculate_iou(pred_box, true_box.numpy())
                     ious.append(iou)
                     print(f"Predicted Box: {pred_box}, True Box: {true_box}, IoU: {iou}")
 
@@ -102,22 +136,22 @@ class Main:
         mean_iou = np.mean(ious)
         print(f"Mean IoU: {mean_iou}")
 
-    def generate_proposals(self, images: torch.Tensor) -> torch.Tensor:
-        # 임시 제안 생성
-        batch_size = images.size(0)
-        proposals = [torch.tensor([[50, 30, 150, 120], [30, 40, 100, 180]], dtype=torch.float32) for _ in range(batch_size)]
-        return torch.stack(proposals)
-
-    def compute_loss(self, cls_scores: torch.Tensor,
-        bbox_preds: torch.Tensor, objectness: torch.Tensor,
-        bbox_deltas: torch.Tensor, targets: Dict[str, torch.Tensor]) -> torch.Tensor:
-        # 손실 계산 함수 예시
-        classification_loss = F.cross_entropy(cls_scores, targets['labels'].long())
-        bbox_loss = F.smooth_l1_loss(bbox_preds, targets['boxes'])
-        objectness_loss = F.binary_cross_entropy_with_logits(objectness, targets['objectness'])
-        rpn_bbox_loss = F.smooth_l1_loss(bbox_deltas, targets['bbox_deltas'])
-
-        total_loss = classification_loss + bbox_loss + objectness_loss + rpn_bbox_loss
+    def compute_loss(self, predictions: Dict[str, torch.Tensor], targets: Dict[str, torch.Tensor]) -> torch.Tensor:
+        """
+        YOLO 손실 계산 함수
+        - predictions: 모델의 예측 결과, 예: {'boxes': ..., 'classes': ..., 'objectness': ...}
+        - targets: 실제 레이블, 예: {'boxes': ..., 'labels': ..., 'objectness': ...}
+        """
+        # 클래스 손실
+        cls_loss = F.cross_entropy(predictions['classes'], targets['labels'].long())
+        
+        # 바운딩 박스 손실
+        bbox_loss = F.smooth_l1_loss(predictions['boxes'], targets['boxes'])
+        
+        # 객체성 손실
+        objectness_loss = F.binary_cross_entropy_with_logits(predictions['objectness'], targets['objectness'])
+        
+        total_loss = cls_loss + bbox_loss + objectness_loss
         return total_loss
 
     def calculate_iou(self, box1: np.ndarray, box2: np.ndarray) -> float:
@@ -136,3 +170,5 @@ class Main:
 
 if __name__ == "__main__":
     main = Main()
+    main.train()
+    main.test()
