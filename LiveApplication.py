@@ -7,7 +7,6 @@ import cv2
 import time
 from models import YoloV4
 from models.PostProcessor import YOLOPostProcessor
-import numpy as np
 
 class ApplicationHandler:
     def __init__(self, model_path: str = "trained_yolov4.pth", conf_threshold: float = 0.5, iou_threshold: float = 0.4):

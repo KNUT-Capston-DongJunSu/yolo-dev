@@ -119,7 +119,7 @@ class YOLOv4(nn.Module):
 class YOLOPostProcessor:
     def __init__(self, conf_threshold=0.5, iou_threshold=0.4, input_dim=416):
         """
-        YOLO 모델의 추론 결과를 처리하는 PostProcessor.
+        YOLO 모델의 추론 결과를 처리하는 PostProcessor. (후처리)
         
         Args:
             conf_threshold (float): 신뢰도 점수 임계값 (default=0.5)
