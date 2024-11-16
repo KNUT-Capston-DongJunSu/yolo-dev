@@ -9,18 +9,24 @@
 ## 폴더 구조
 ```plaintext
 CongestionNotifier/
-├── data/                    # 데이터 관련 폴더
-│   ├── images/              # 원본 이미지 또는 테스트 이미지 폴더
-│   ├── annotations/         # JSON 어노테이션 파일 저장
-│   └── processed/           # 전처리된 데이터 저장
-├── src/                     # 소스 코드 폴더
-│   ├── customdataset.py     # 데이터셋 처리 클래스 파일
-│   ├── model.py             # 모델 정의 파일
-│   ├── train.py             # 모델 훈련 코드 파일
-│   ├── test.py              # 테스트 코드 파일
-│   └── LiveApplication.py  # 실시간 애플리케이션 실행 코드 파일
+├── dataset/                    # 데이터셋 관련 폴더
+│   ├── train/               # 원본 이미지와 바운딩 박스 레이블
+│   ├── val/                 # 원본 이미지와 바운딩 박스 레이블
+│   └── test/                # 원본 테스트 이미지
+├── data/
+│   └── customdataset.py     # 데이터셋 처리 클래스 파일
+├── models/                     # 소스 코드 폴더
+│   ├── CSPnet.py            # CSPNet 모델 정의 및 데이터 처리 클래스
+│   ├── FPN.py               # FPN 모델 정의 파일
+│   ├── PAnet.py             # PANet 모델 학습 및 정의 파일
+│   ├── YoloV4.py            # YOLOv4 테스트 코드 파일
+│   └── total_model.py       # 전체 모델 통합 및 실행 코드
+├── utils/
+│   └── utils.py             # 유틸리티 파일 저장
 ├── checkpoints/             # 훈련된 모델 가중치 저장
 │   └── trained_detector.pth # 훈련된 모델 파일
+├── LiveApplication.py       # 카메라 라이브 앱 실행 파일
+├── main.py                  # 모델의 훈련 및 테스트 파일 
 ├── requirements.txt         # 필요한 패키지 목록
 └── README.md                # 프로젝트 설명 파일
 ```
