@@ -1,6 +1,2 @@
 checkpoints/*.pth
-!checkpoints/
-data/
-!data/.gitkeep
-data/test/
-data/train/
+dataset
