@@ -6,8 +6,8 @@ from picamera.array import PiRGBArray
 from picamera import PiCamera
 import cv2
 import time
-from model import SimpleObjectDetector
-from typing import List, Tuple
+from main import SimpleObjectDetector
+from typing import List
 
 class ApplicationHandler:
     def __init__(self) -> None:
