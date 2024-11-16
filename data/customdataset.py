@@ -7,10 +7,18 @@ from torchvision.transforms import transforms
 from typing import Optional, Tuple, Dict
 
 class CustomDetectionDataset(Dataset):
-    def __init__(self, data_set_path: str, transforms: Optional[transforms.Compose] = None) -> None:
+    def __init__(self, data_set_path: str, odgt_file: str, transforms: Optional[transforms.Compose] = None) -> None:
         self.data_set_path = data_set_path
         self.transforms = transforms
-        self.image_files = [f for f in os.listdir(data_set_path) if f.endswith('.jpg')]
+        self.image_files = []
+        self.annotations = []
+
+        # odgt 파일 읽기
+        with open(odgt_file, 'r') as f:
+            for line in f:
+                entry = json.loads(line.strip())
+                self.image_files.append(entry['ID'])
+                self.annotations.append(entry['gtboxes'])
 
     def __len__(self) -> int:
         return len(self.image_files)
@@ -20,23 +28,28 @@ class CustomDetectionDataset(Dataset):
         image_path = os.path.join(self.data_set_path, self.image_files[index])
         image = Image.open(image_path).convert("RGB")
         
-        # 해당 이미지의 JSON 파일 불러오기
-        annotation_file = os.path.splitext(image_path)[0] + '.json'
-        with open(annotation_file) as f:
-            annotation = json.load(f)
+        # 해당 이미지의 어노테이션 가져오기
+        annotation = self.annotations[index]
         
-        # 바운딩 박스와 레이블 정보 가져오기
-        bbox = annotation['bbox']
-        label = annotation['category_id']
+         # 여러 바운딩 박스와 레이블 정보 가져오기
+        bboxes = []
+        labels = []
+        for box in annotation['gtboxes']:
+            bboxes.append(box['hbox'])  # 바운딩 박스 좌표
+            labels.append(box['tag'])  # 클래스 레이블
         
+        # 클래스 레이블 매핑 (예: "person" -> 1)
+        label_map = {'person': 1}  # 레이블 매핑 정의
+        labels = [label_map.get(label, 0) for label in labels]  # 기본값: 0 (알 수 없는 레이블)
+
         # 바운딩 박스와 레이블을 텐서로 변환
-        bbox = torch.tensor(bbox, dtype=torch.float32)
-        label = torch.tensor(label, dtype=torch.int64)
+        bboxs = torch.tensor(bboxs, dtype=torch.float32)
+        labels = torch.tensor(labels, dtype=torch.int64)
 
         # 변환 적용
         if self.transforms:
             image = self.transforms(image)
         
-        target = {"boxes": bbox.unsqueeze(0), "labels": label.unsqueeze(0)}
+        target = {"boxes": bboxs.unsqueeze(0), "labels": labels.unsqueeze(0)}
         
         return image, target

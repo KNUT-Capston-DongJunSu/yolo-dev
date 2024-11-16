@@ -1,3 +1,6 @@
+import torch
+import torch.nn as nn
+
 class PANet(nn.Module):
     def __init__(self, in_channels_list, out_channels):
         super(PANet, self).__init__()

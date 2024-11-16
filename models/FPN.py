@@ -1,3 +1,6 @@
+import torch
+import torch.nn as nn
+
 class FPN(nn.Module):
     def __init__(self, in_channels_list, out_channels):
         super(FPN, self).__init__()
