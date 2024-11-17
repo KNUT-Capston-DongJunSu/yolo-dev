@@ -1,59 +1,92 @@
-import torch 
+import torch
 from torchvision.ops import nms
 
 class YOLOPostProcessor:
-    def __init__(self, conf_threshold=0.5, iou_threshold=0.4, input_dim=416):
+    def __init__(self, conf_threshold=0.3, iou_threshold=0.4, input_dim=256):
         """
         YOLO 모델의 추론 결과를 처리하는 PostProcessor.
         
         Args:
-            conf_threshold (float): 신뢰도 점수 임계값 (default=0.5)
+            conf_threshold (float): 신뢰도 점수 임계값 (default=0.3)
             iou_threshold (float): NMS에 사용할 IoU 임계값 (default=0.4)
-            input_dim (int): 모델 입력 크기 (default=416)
+            input_dim (int): 모델 입력 크기 (default=256)
         """
         self.conf_threshold = conf_threshold
         self.iou_threshold = iou_threshold
         self.input_dim = input_dim
 
-    def process_predictions(self, predictions, original_img_shapes):
+    def process_predictions(self, predictions, original_img_shape):
         """
         YOLO 모델의 원본 예측 결과를 후처리하여 최종 바운딩 박스 생성.
-        
+
         Args:
             predictions (torch.Tensor): YOLO 모델의 출력. Shape: [batch_size, num_predictions, num_classes + 5]
             original_img_shape (tuple): 원본 이미지 크기 (height, width)
-        
+
         Returns:
-            list: 최종 바운딩 박스 리스트. 각 박스는 [x, y, w, h, confidence, class_id].
+            list: 최종 바운딩 박스 리스트. 각 박스는 [x, y, w, h, confidence, class_id, class_score].
         """
+        # 디버깅: original_img_shape 출력
+        #print(f"Processing predictions with original image shape: {original_img_shape}")
+
         batch_boxes = []
         for batch_idx, pred in enumerate(predictions):
+            # print(f"Processing batch {batch_idx}, raw predictions shape: {pred.shape}")
+
+            # Filter boxes
             filtered_boxes = self.filter_boxes(pred)
-            rescaled_boxes = self.rescale_boxes(filtered_boxes, original_img_shapes[batch_idx])
+            # print(f"Batch {batch_idx} - Filtered boxes count: {len(filtered_boxes)}")
+
+            if len(filtered_boxes) == 0:
+                # print(f"No boxes left after filtering for batch {batch_idx}. Skipping...")
+                batch_boxes.append([])
+                continue
+
+            # Rescale boxes
+            rescaled_boxes = self.rescale_boxes(filtered_boxes, original_img_shape)
+            # print(f"Batch {batch_idx} - Rescaled boxes count: {len(rescaled_boxes)}")
+
+            if len(rescaled_boxes) == 0:
+                # print(f"No boxes left after rescaling for batch {batch_idx}. Skipping...")
+                batch_boxes.append([])
+                continue
+
+            # Non-Max Suppression
             nms_boxes = self.non_max_suppression(rescaled_boxes)
+            # print(f"Batch {batch_idx} - NMS boxes count: {len(nms_boxes)}")
+
             batch_boxes.append(nms_boxes)
         return batch_boxes
 
-
-    def filter_boxes(self, predictions):
+    def filter_boxes(self, predictions, max_boxes=3000):
         """
         신뢰도 점수가 일정 기준 이상인 바운딩 박스를 필터링.
         
         Args:
             predictions (torch.Tensor): 예측 결과.
+            max_boxes (int): 유지할 최대 박스 수.
         
         Returns:
             list: 필터링된 바운딩 박스.
         """
-        mask = predictions[..., 4] > self.conf_threshold  # confidence score > threshold
+        mask = predictions[..., 4] > self.conf_threshold
+        # print(f"Confidence scores: min={predictions[..., 4].min()}, max={predictions[..., 4].max()}, mean={predictions[..., 4].mean()}")
+        # print(f"Mask shape: {mask.shape}, Passed boxes: {mask.sum().item()}")
+
         filtered_preds = predictions[mask]
+
+        # 상위 max_boxes 제한
+        if len(filtered_preds) > max_boxes:
+            _, indices = filtered_preds[..., 4].topk(max_boxes)
+            filtered_preds = filtered_preds[indices]
+
         boxes = []
         for pred in filtered_preds:
-            x, y, w, h = pred[:4]  # 바운딩 박스 좌표
-            conf = pred[4]  # 신뢰도
-            class_scores = pred[5:]  # 클래스 점수
-            class_id = class_scores.argmax().item()  # 가장 높은 점수의 클래스
-            class_score = class_scores[class_id].item()  # 해당 클래스의 점수
+            x, y, w, h = pred[:4]
+            conf = pred[4]
+            class_scores = pred[5:]
+            class_id = class_scores.argmax().item()
+            class_score = class_scores[class_id].item()
             boxes.append([x, y, w, h, conf, class_id, class_score])
         return boxes
 
@@ -70,12 +103,19 @@ class YOLOPostProcessor:
         """
         orig_h, orig_w = original_img_shape
         scale_factor = min(self.input_dim / orig_w, self.input_dim / orig_h)
+
+        scaled_boxes = []
         for box in boxes:
-            box[0] = (box[0] - (self.input_dim - scale_factor * orig_w) / 2) / scale_factor  # x
-            box[1] = (box[1] - (self.input_dim - scale_factor * orig_h) / 2) / scale_factor  # y
-            box[2] /= scale_factor  # w
-            box[3] /= scale_factor  # h
-        return boxes
+            x = (box[0] - (self.input_dim - scale_factor * orig_w) / 2) / scale_factor
+            y = (box[1] - (self.input_dim - scale_factor * orig_h) / 2) / scale_factor
+            w = box[2] / scale_factor
+            h = box[3] / scale_factor
+
+            # 좌표 범위 제한 (0 이상)
+            x = max(0, x)
+            y = max(0, y)
+            scaled_boxes.append([x, y, w, h, box[4], box[5], box[6]])
+        return scaled_boxes
 
     def non_max_suppression(self, boxes):
         """
@@ -91,8 +131,8 @@ class YOLOPostProcessor:
             return []
 
         boxes_tensor = torch.tensor(boxes)
-        xywh_boxes = boxes_tensor[:, :4]  # x, y, w, h
-        scores = boxes_tensor[:, 4]  # confidence scores
+        xywh_boxes = boxes_tensor[:, :4]
+        scores = boxes_tensor[:, 4]
         indices = nms(xywh_boxes, scores, self.iou_threshold)
         return boxes_tensor[indices].tolist()
 
@@ -112,8 +152,8 @@ class YOLOPostProcessor:
         x2 = min(box1[0] + box1[2], box2[0] + box2[2])
         y2 = min(box1[1] + box1[3], box2[1] + box2[3])
 
-        inter_area = max(0, x2 - x1) * max(0, y2 - y1)  # 교집합 영역
+        inter_area = max(0, x2 - x1) * max(0, y2 - y1)
         box1_area = box1[2] * box1[3]
         box2_area = box2[2] * box2[3]
 
-        return inter_area / (box1_area + box2_area - inter_area + 1e-6)  # IoU 계산
+        return inter_area / (box1_area + box2_area - inter_area + 1e-6)
