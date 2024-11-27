@@ -8,27 +8,32 @@
 
 ## 폴더 구조
 ```plaintext
-CongestionNotifier/
-├── dataset/                    # 데이터셋 관련 폴더
-│   ├── train/               # 원본 이미지와 바운딩 박스 레이블
-│   ├── val/                 # 원본 이미지와 바운딩 박스 레이블
-│   └── test/                # 원본 테스트 이미지
-├── data/
-│   └── customdataset.py     # 데이터셋 처리 클래스 파일
-├── models/                     # 소스 코드 폴더
-│   ├── CSPnet.py            # CSPNet 모델 정의 및 데이터 처리 클래스
-│   ├── FPN.py               # FPN 모델 정의 파일
-│   ├── PAnet.py             # PANet 모델 학습 및 정의 파일
-│   ├── YoloV4.py            # YOLOv4 테스트 코드 파일
-│   └── total_model.py       # 전체 모델 통합 및 실행 코드
-├── utils/
-│   └── utils.py             # 유틸리티 파일 저장
-├── checkpoints/             # 훈련된 모델 가중치 저장
-│   └── trained_detector.pth # 훈련된 모델 파일
-├── LiveApplication.py       # 카메라 라이브 앱 실행 파일
-├── main.py                  # 모델의 훈련 및 테스트 파일 
-├── requirements.txt         # 필요한 패키지 목록
-└── README.md                # 프로젝트 설명 파일
+DensityAI/
+├── configs/                     # 설정 파일 폴더
+│   └── custom.yaml              # 모델 학습 및 데이터셋 설정 파일
+├── datasets/                    # 데이터셋 관리 폴더
+│   ├── images/                  # 이미지 데이터 저장 폴더
+│   │   ├── train/               # 학습용 이미지
+│   │   ├── val/                 # 검증용 이미지
+│   │   └── test/                # 테스트용 이미지
+│   ├── labels/                  # 라벨 데이터 저장 폴더
+│   │   ├── train/               # 학습용 바운딩 박스 라벨
+│   │   ├── val/                 # 검증용 바운딩 박스 라벨
+│   │   ├── train.cache          # 학습 데이터 캐시 파일
+│   │   └── val.cache            # 검증 데이터 캐시 파일
+│   ├── annotation_train         # 학습 데이터 주석 파일 
+│   └── annotation_val           # 검증 데이터 주석 파일 
+├── models/                      # 학습된 모델 및 관련 파일
+│   └── yolov5su.pt              # 훈련된 YOLOv5 모델 파일
+├── results/                     # 결과 저장 폴더
+├── scripts/                     # 스크립트 파일 폴더
+│   ├── LiveApplication.py       # 실시간 카메라 애플리케이션 실행 파일
+│   ├── Myodgt2yolo.py           # ODGT 포맷 데이터를 YOLO 포맷으로 변환
+│   ├── odgt2yolo.py             # ODGT 포맷 변환 스크립트
+│   └── yolov5.py                # YOLOv5 모델 학습 및 실행 코드
+├── .gitignore                   # Git에서 제외할 파일/폴더 설정
+├── README.md                    # 프로젝트 설명 파일
+└── yolo11n.pt                   # 또 다른 YOLO 모델 가중치 파일
 ```
 
 ## 설치 방법
