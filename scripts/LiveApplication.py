@@ -7,7 +7,7 @@ import torch
 from yolov5 import YOLOTrainer
 
 class ApplicationHandler:
-    def __init__(self):
+    def __init__(self, weight_path):
         """
         Application Handler for YOLO inference with PiCamera.
         
@@ -16,7 +16,7 @@ class ApplicationHandler:
         :param iou_threshold: IoU threshold for predictions.
         """
 
-        self.model = YOLOTrainer(weight_path="")
+        self.model = YOLOTrainer(weight_path=weight_path)
         
         # PiCamera 초기화
         self.camera = PiCamera()

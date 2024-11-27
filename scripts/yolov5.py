@@ -106,7 +106,7 @@ if __name__=="__main__":
         model_path='models/yolov5s.pt', 
         config_path='configs/custom.yaml'
     )
-    trainer.train(epochs=100, imgsz=256, batch_size=8, project='results', name='train1')
+    trainer.train(epochs=100, imgsz=256, batch_size=4, project='results', name='train1')
 
     metrics = trainer.validate(imgsz=256)
     print(metrics)  # mAP, precision, recall 출력
