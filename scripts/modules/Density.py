@@ -1,6 +1,6 @@
 import math, time
 
-class Density:
+class DensityManager:
     def __init__(self, frame_height):
         # Pi Camera 기본 시야각
         self.fov_horizontal = 62.2  # degrees
@@ -95,3 +95,5 @@ class Density:
 
         # 시뮬레이션 속도 조절 (실제 환경에서는 제거)
         time.sleep(1)
+
+        return density
