@@ -27,10 +27,20 @@ DensityAI/
 │   └── yolov5su.pt              # 훈련된 YOLOv5 모델 파일
 ├── results/                     # 결과 저장 폴더
 ├── scripts/                     # 스크립트 파일 폴더
+│   ├── modules/
+│   │   ├── DataBase.py          # 데이터 베이스에 연결, 전송 파일
+│   │   ├── Density.py           # 밀도 계산 파일
+│   │   ├── Email.py             # 이메일 전송 파일
+│   │   ├── FTP.py               # FTP 전송 파일
+│   │   ├── HTML.py              # HTML 구성 파일
+│   │   └── Pyplot.py            # 실시간으로 그래프 업데이트 파일
+│   ├── odgt/
+│   │   ├── MyTransform.py       # ODGT 포맷 데이터를 YOLO 포맷으로 변환
+│   │   └── odgt2yolo.py         # ODGT 포맷 변환 공유받은 스크립트
 │   ├── LiveApplication.py       # 실시간 카메라 애플리케이션 실행 파일
-│   ├── Myodgt2yolo.py           # ODGT 포맷 데이터를 YOLO 포맷으로 변환
-│   ├── odgt2yolo.py             # ODGT 포맷 변환 스크립트
 │   └── yolov5.py                # YOLOv5 모델 학습 및 실행 코드
+├── template/                    # 템플릿 폴더 
+│   └── template.html            # 포멧하여 FTP 전송할 템플릿 파일
 ├── .gitignore                   # Git에서 제외할 파일/폴더 설정
 ├── README.md                    # 프로젝트 설명 파일
 └── yolo11n.pt                   # 또 다른 YOLO 모델 가중치 파일
