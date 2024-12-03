@@ -36,6 +36,7 @@ DensityAI/
 │   │   └── Pyplot.py            # 실시간으로 그래프 업데이트 파일
 │   ├── odgt/
 │   │   ├── MyTransform.py       # ODGT 포맷 데이터를 YOLO 포맷으로 변환
+│   │   ├── Myodgt2yolo.py       # ODGT 포맷 데이터를 YOLO 포맷으로 변환
 │   │   └── odgt2yolo.py         # ODGT 포맷 변환 공유받은 스크립트
 │   ├── LiveApplication.py       # 실시간 카메라 애플리케이션 실행 파일
 │   └── yolov5.py                # YOLOv5 모델 학습 및 실행 코드
