@@ -1,13 +1,13 @@
 import math, time
 
 class DensityManager:
-    def __init__(self, frame_height):
+    def __init__(self, camera_height, frame_height):
         # Pi Camera 기본 시야각
         self.fov_horizontal = 62.2  # degrees
         self.fov_vertical = 48.8  # degrees
 
         # 카메라 높이 및 해상도
-        self.camera_height = 3.0  # 카메라 높이 (m)
+        self.camera_height = camera_height  # 카메라 높이 (m)
         self.frame_height = frame_height  # 실제 프레임 높이
 
         # 초기값 설정
@@ -69,6 +69,10 @@ class DensityManager:
                 pixel_height, self.frame_height, self.fov_vertical, camera_distance)
             object_heights.append(real_height)
 
+        if len(object_heights)==0:  # 객체가 탐지되지 않은 경우
+            print("No objects detected in the current frame.")
+            return 0  # 밀도를 0으로 반환
+        
         # 현재 프레임에서 가장 높은 객체 찾기
         current_max_height = max(object_heights)
         print(f"현재 프레임 최대 높이: {current_max_height:.2f} m")

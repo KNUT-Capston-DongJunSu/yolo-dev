@@ -2,7 +2,8 @@ import torch
 from ultralytics import YOLO
 import numpy as np
 import cv2
-from PIL import Image
+from PIL import Image, ImageDraw
+import os 
 
 class YOLOTrainer:
     def __init__(self, model_path: str = None, config_path: str = None, weight_path: str = None,  device: str = None):
@@ -12,6 +13,7 @@ class YOLOTrainer:
         self.config_path = config_path
         self.train_model = None  # 훈련에 사용될 모델
         self.predict_model = None  # 예측에 사용될 모델
+        self.frame_idx = 0
         print(f"Initialized YOLO on device: {self.device}")
 
     def load_model(self, mode: str):
@@ -27,7 +29,7 @@ class YOLOTrainer:
     def train(self, epochs: int = 100, imgsz: int = 256, batch_size: int = 8, project: str = 'results', name: str = 'train'):
         if not self.train_model:
             self.load_model(mode='train')
-        self.model.train(
+        self.train_model.train(
             data=self.config_path,
             epochs=epochs,
             imgsz=imgsz,
@@ -41,61 +43,59 @@ class YOLOTrainer:
     def validate(self, imgsz: int = 256):
         if not self.train_model:
             self.load_model(mode='train')
-        metrics = self.model.val(
+        metrics = self.train_model.val(
             data=self.config_path,
             imgsz=imgsz,
             device=self.device
         )
         print("Validation completed.")
         return metrics
-
-    def predict(self, image, conf_threshold: float = 0.5, iou_threshold: float = 0.4):
+    
+    def predict(self, frame, conf_threshold: float = 0.5, iou_threshold: float = 0.4, 
+               stream: bool = False, half: bool = False, save: bool = True, project: str = None, name: str = None):
         if not self.predict_model:
             self.load_model(mode='predict')
 
-        if isinstance(image, str):
-            input_image = image
-        elif isinstance(image, np.ndarray):
-            input_image = Image.fromarray(cv2.cvtColor(image, cv2.COLOR_BGR2RGB))
-        elif isinstance(image, Image.Image):
-            input_image = image
-        else:
-            raise ValueError("Unsupported image format.")
-
-        results = self.predict_model.predict(
-            source=input_image,
-            conf=conf_threshold,
-            iou=iou_threshold,
-            device=self.device
+        # Perform prediction on the current frame
+        result = list(
+            self.predict_model.predict(
+                source=frame,
+                conf=conf_threshold,
+                iou=iou_threshold,
+                save=save,
+                project=project,
+                name=name,
+                device=self.device,
+                half=half,
+            )
         )
         
-        return { "raw": results, 
-                "boxes": results[0].boxes.xyxy,
-                "scores": results[0].boxes.conf, 
-                "classes": results[0].boxes.cls }, results[0].plot()
+        # Process raw results for the current frame
+        boxes = result[0].boxes.xyxy.tolist() if isinstance(result[0].boxes.xyxy, torch.Tensor) else result[0].boxes.xyxy
+        scores = result[0].boxes.conf.tolist() if isinstance(result[0].boxes.conf, torch.Tensor) else result[0].boxes.conf
+        classes = result[0].boxes.cls.tolist() if isinstance(result[0].boxes.cls, torch.Tensor) else result[0].boxes.cls
+
+        # Generate plot for the current frame
+        plot = result[0].plot()
+        self.frame_idx += 1
         
-        
+        return {"frame_index": self.frame_idx,
+                "prediction": {
+                    "boxes": boxes,
+                    "scores": scores,
+                    "classes": classes
+                },
+                "plot": plot}
+
 if __name__=="__main__":
     trainer = YOLOTrainer(
         model_path='models/yolov5s.pt', 
         config_path='configs/custom.yaml'
     )
-    trainer.train(epochs=100, imgsz=256, batch_size=4, project='results', name='train1')
+    trainer.train(epochs=100, imgsz=256, batch_size=8, project='results', name='train1')
 
     metrics = trainer.validate(imgsz=256)
     print(metrics)  # mAP, precision, recall 출력
 
-    results = trainer.infer(
-        source='datasets/images/val/', 
-        save=True, 
-        save_txt=True, 
-        project='results', 
-        name='my_detection'
-    )
-
-    results = trainer.predict(
-        source="datasets/images/val",  # 추론할 데이터 경로
-        conf=0.25,  # Confidence Threshold
-        iou=0.45,   # IoU Threshold
-        save=True,
-    )
+   
+    

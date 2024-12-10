@@ -14,7 +14,7 @@ class PlotManager:
         self.fig, self.ax = plt.subplots()
         self.x_data = deque(maxlen=self.max_length)  # 고정 길이 큐 (최대 max_length 개 유지)
         self.y_data = deque(maxlen=self.max_length)  # 고정 길이 큐 (최대 max_length 개 유지)
-        self.line,_ = self.ax.plot([], [], label="Real-time Data")
+        self.line, = self.ax.plot([], [], label="Real-time Data")
 
         # x축 포맷 설정 (날짜 및 시간)
         self.ax.xaxis.set_major_formatter(mdates.DateFormatter('%H:%M:%S'))  # 시간 형식
