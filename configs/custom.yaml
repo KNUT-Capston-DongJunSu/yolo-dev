@@ -3,4 +3,3 @@ val: ../images/val
 
 nc: 2  # 클래스 수 (예: fbox와 hbox)
 names: ['fbox', 'hbox']  # 클래스 이름
-

@@ -31,3 +31,12 @@ class EmailManager:
             print(f"이메일 발송 중 오류 발생: {e}")
         finally:
             server.quit()  # 서버 연결 종료
+
+email_config={
+    "sender_email": "kimjunhee2483@gmail.com", 
+    "sender_password": "qtcv mtwy tagg bkvw" , 
+    "recipient_email": "kimjunhee2483@gmail.com"
+}
+email_manager = EmailManager(**email_config)
+email_manager.SendEmail("자동차통신시스템설계", 
+                        "안녕하세요. 16주차 발표를 시작하겠습니다.")

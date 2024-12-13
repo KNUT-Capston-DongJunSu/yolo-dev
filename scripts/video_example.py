@@ -3,8 +3,10 @@ import time
 import os
 import numpy as np
 from modules.Density import DensityManager
+from modules.Pyplot import PlotManager
 from yolov5 import YOLOTrainer
 from PIL import Image, ImageDraw
+
 
 class VideoStreamHandler:
     def __init__(self, video_path, weight_path, save_dir, output_video):
@@ -15,6 +17,7 @@ class VideoStreamHandler:
 
         self.trainer = YOLOTrainer(weight_path=weight_path)
         self.density_manager = DensityManager(frame_height=480, camera_height=3.0)
+        self.pyplot_manager = PlotManager()
         self.save_dir = save_dir
 
         # VideoWriter 초기화
@@ -67,9 +70,11 @@ class VideoStreamHandler:
                 save=False,
                 half=True  # FP16 모드 활성화
             )
-
             # fbox와 확률값 없는 결과 시각화
             plot_bgr = self.custom_plot(frame_resized, results)
+
+            density = self.density_manager.calculate_density(results["prediction"])
+            self.pyplot_manager.update_Live_pyplot(density)
 
             # 결과 쓰기
             self.video_writer.write(plot_bgr)

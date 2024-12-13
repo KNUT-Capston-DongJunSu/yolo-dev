@@ -25,7 +25,7 @@ class PlotManager:
         self.ax.set_ylabel("Density")
         self.ax.legend()
 
-    def update_Live_pyplot(self, current_value, filename="FTP_files/graph.png"):
+    def update_Live_pyplot(self, current_value, filename="graph.png"):
         current_time = datetime.now()  # 현재 시간
         
         # 최신 데이터를 큐에 추가 (최대 길이를 넘으면 자동 제거)

@@ -1,4 +1,4 @@
-import mysql.connector
+Simport mysql.connector
 from datetime import datetime
 
 class DatabaseManager:
