@@ -1,4 +1,4 @@
-Simport mysql.connector
+import mysql.connector
 from datetime import datetime
 
 class DatabaseManager:
@@ -48,3 +48,27 @@ class DatabaseManager:
         """데이터베이스 연결 종료"""
         self.cursor.close()
         self.conn.close()
+
+db_config = {"host": "localhost", "user": "root", 
+                 "password": "1111", "database": "processlogs "}
+
+log_process = DatabaseManager(**db_config)
+
+log_process.insert_progresslogs(
+            process_name="Run", step_name="threads started",
+            status="started", details="Starting capture and processing threads")
+
+log_process.insert_progresslogs(
+            process_name="camera_capture", step_name="capture per frames", 
+            status="started", details="Initializing camera capture loop")
+
+log_process.insert_progresslogs(
+            process_name="process_frames", 
+            step_name="frame processing",
+            status="started", 
+            details="Initializing frame processing loop"
+            )
+
+log_process.insert_progresslogs(
+                process_name="Run", step_name="threads completed",
+                status="completed", details="All threads completed successfully")

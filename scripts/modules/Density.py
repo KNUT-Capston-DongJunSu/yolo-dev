@@ -96,8 +96,4 @@ class DensityManager:
         object_count = len(self.bounding_boxes)
         density = object_count / volume
         print(f"객체 수: {object_count}, 혼잡도: {density:.2f} 객체/㎥")
-
-        # 시뮬레이션 속도 조절 (실제 환경에서는 제거)
-        time.sleep(1)
-
         return density

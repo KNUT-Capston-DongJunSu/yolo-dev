@@ -1,2 +1,7 @@
-datasets/
+datasets/images/
+datasets/labels/
+datasets/video/
+datasets/*.odgt
+
 results/*/*.mp4
+results/density/*.png

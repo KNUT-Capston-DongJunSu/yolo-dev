@@ -31,6 +31,7 @@ class PlotManager:
         # 최신 데이터를 큐에 추가 (최대 길이를 넘으면 자동 제거)
         self.x_data.append(current_time)
         self.y_data.append(current_value)
+        print(f"current value: {current_value}")
 
         # 그래프 데이터 업데이트
         self.line.set_xdata(list(self.x_data))
