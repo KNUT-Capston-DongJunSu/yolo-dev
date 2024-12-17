@@ -10,3 +10,4 @@ datasets/*.odgt
 
 results/*/*.mp4
 results/density/*.png
+results/*.avi

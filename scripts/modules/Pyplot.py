@@ -2,15 +2,17 @@ import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
 from datetime import datetime
 from collections import deque
+import cv2
+import numpy as np
+import sys  # sys 모듈 추가
 
 class PlotManager:
     
     # 설정: 표시할 데이터의 최대 길이
     max_length = 100  # x축에 표시할 데이터 수
     
-    def __init__(self):
+    def __init__(self, video_filename="results/graph_output.avi", fps=10):
         # 그래프 초기 설정
-        plt.ion()  # interactive 모드 활성화
         self.fig, self.ax = plt.subplots()
         self.x_data = deque(maxlen=self.max_length)  # 고정 길이 큐 (최대 max_length 개 유지)
         self.y_data = deque(maxlen=self.max_length)  # 고정 길이 큐 (최대 max_length 개 유지)
@@ -24,6 +26,19 @@ class PlotManager:
         self.ax.set_xlabel("Time")
         self.ax.set_ylabel("Density")
         self.ax.legend()
+
+        # 동영상 설정
+        self.video_filename = video_filename
+        self.fps = fps
+        self.video_writer = None  # 동영상 writer 초기화
+        print(f"Saving video to {self.video_filename}")
+
+    def init_video_writer(self):
+        """VideoWriter 객체 초기화"""
+        if self.video_writer is None:
+            width, height = self.fig.canvas.get_width_height()
+            fourcc = cv2.VideoWriter_fourcc(*'XVID')  # 동영상 코덱
+            self.video_writer = cv2.VideoWriter(self.video_filename, fourcc, self.fps, (width, height))
 
     def update_Live_pyplot(self, current_value, filename="graph.png"):
         current_time = datetime.now()  # 현재 시간
@@ -49,5 +64,22 @@ class PlotManager:
         self.fig.canvas.draw()
         self.fig.canvas.flush_events()
         print(f"Graph complete to update")
-        self.fig.savefig(filename)
-        print(f"Graph saved as {filename}")
+    
+        # 그래프를 동영상으로 저장
+        self.init_video_writer()
+        img = np.frombuffer(self.fig.canvas.tostring_rgb(), dtype=np.uint8)
+        img = img.reshape(self.fig.canvas.get_width_height()[::-1] + (3,))
+        img = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)  # OpenCV는 BGR 형식 사용
+        self.video_writer.write(img)
+        cv2.imshow("Density", img)
+        print("Frame added to video.")
+
+    def close(self):
+        if self.video_writer:
+            self.video_writer.release()
+            print(f"Video saved as {self.video_filename}")
+        plt.close('all')  # 모든 matplotlib 창 닫기
+        cv2.destroyAllWindows()  # OpenCV 창 닫기
+        sys.exit(0)  # 프로그램 강제 종료
+        print("Graph window closed.")
+    
