@@ -9,14 +9,6 @@ class FTPmanager:
         print("FTP 연결 성공!")
 
     def upload_files_to_ftp(self, directory_path, upload_dir):
-        """
-        디렉토리 내 모든 파일을 FTP 서버에 업로드
-        :param ftp_server: FTP 서버 주소 (예: 'ftp.example.com')
-        :param ftp_user: FTP 사용자명
-        :param ftp_password: FTP 비밀번호
-        :param directory_path: 업로드할 로컬 디렉토리 경로
-        :param upload_dir: FTP 서버의 업로드 디렉토리 경로
-        """
         try:
             # 디렉토리에서 모든 파일 경로 가져오기
             file_paths = [

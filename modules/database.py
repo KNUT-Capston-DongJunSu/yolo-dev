@@ -1,6 +1,6 @@
 import mysql.connector
 from datetime import datetime
-from configs.db_config import DB_CONFIG
+from configs.config import DB_CONFIG
 
 class DatabaseManager:
     def __init__(self, host, user, password, database):
