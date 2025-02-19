@@ -1,6 +1,6 @@
 import argparse
-from modules.app import ApplicationHandler
-from modules.app import AdditionalApplicationHandler
+from src import ApplicationHandler
+from src import AdditionalApplicationHandler
 from configs.config import DB_CONFIG, FTP_CONFIG, EMAIL_CONFIG
 
 def parse_args():
