@@ -4,12 +4,11 @@ import signal
 import sys
 import numpy as np
 from multiprocessing import Process, Queue
-from modules.app.features.Density import DensityManager
-from modules.app.features.Pyplot import PlotManager
-from modules.app.YOLOv5.yolov5 import YOLOTrainer
+from src.app.analy.Density import DensityManager
+from src.app.analy.Pyplot import PlotManager
+from src.yolo_trainer import YOLOTrainer
+from src.utils.shared_sort import *  # SORT 임포트 추가
 from PIL import Image, ImageDraw
-from modules.app.tracking.shared_sort import Sort  # SORT 임포트 추가
-
 
 class VideoStreamHandler:
     def __init__(self, video_path, weight_path, save_dir, output_video):

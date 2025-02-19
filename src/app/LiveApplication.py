@@ -5,9 +5,9 @@ import numpy as np
 from PIL import Image, ImageDraw
 from picamera import PiCamera
 from picamera.array import PiRGBArray
-from modules.app.features.Density import DensityManager
-from modules.app.features.Pyplot import PlotManager
-from modules.app.YOLOv5.yolov5 import YOLOTrainer
+from src.app.analy.Density import DensityManager
+from src.app.analy.Pyplot import PlotManager
+from src.yolo_trainer import YOLOTrainer
 
 class ApplicationHandler:
     def __init__(self, weight_path):
