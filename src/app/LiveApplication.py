@@ -5,8 +5,8 @@ import numpy as np
 from PIL import Image, ImageDraw
 from picamera import PiCamera
 from picamera.array import PiRGBArray
-from src.app.analy.Density import DensityManager
-from src.app.analy.Pyplot import PlotManager
+from src.app.Density import DensityManager
+from src.app.Pyplot import PlotManager
 from src.yolo_trainer import YOLOTrainer
 
 class ApplicationHandler:

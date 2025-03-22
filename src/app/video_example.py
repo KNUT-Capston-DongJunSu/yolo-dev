@@ -4,8 +4,8 @@ import signal
 import sys
 import numpy as np
 from multiprocessing import Process, Queue
-from src.app.analy.Density import DensityManager
-from src.app.analy.Pyplot import PlotManager
+from src.app.Density import DensityManager
+from src.app.Pyplot import PlotManager
 from src.yolo_trainer import YOLOTrainer
 from src.utils.shared_sort import *  # SORT 임포트 추가
 from PIL import Image, ImageDraw

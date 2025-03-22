@@ -6,8 +6,8 @@ import numpy as np
 from PIL import Image, ImageDraw
 from picamera import PiCamera
 from picamera.array import PiRGBArray
-from src.app.analy.Density import DensityManager
-from src.app.analy.Pyplot import PlotManager
+from src.app.Density import DensityManager
+from src.app.Pyplot import PlotManager
 from src.services.email_transfer import EmailManager
 from src.services.ftp_transfer import FTPmanager
 from src.services.html_generator import HtmlManager
