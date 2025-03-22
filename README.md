@@ -12,13 +12,16 @@
 ├── configs/           # 설정 관련 파일 저장
 ├── modules/           # 기능별 모듈 저장
 ├── results/           # 분석 결과 저장
+├── src/
+│   ├── app/           # application 핵심 파일
+│   ├── services/      # 웹 서비스와 이메일 알리미 구성 
+│   ├── MyTransform.py # yolo포멧 변경
+│   ├── shared_sort.py # 객체 트래킹
+│   ├── yolo_trainer.py # yolo 모델 import하여 학습과 추론
 ├── template/          # 템플릿 파일 저장
 ├── .gitignore         # Git에서 제외할 파일 목록
 ├── main.py            # 메인 실행 파일
-├── Mytransform.py     # 데이터 변환 관련 코드
-├── odgt2yolo.py       # ODGT 데이터를 YOLO 형식으로 변환하는 스크립트
 ├── README.md          # 프로젝트 개요 및 설명 파일
-├── yolo_trainer.py    # YOLO 모델 학습 스크립트
 ```
 
 ## 실행 방법
@@ -36,5 +39,5 @@ python main.py
 ## 데이터 변환
 `odgt2yolo.py`를 사용하여 ODGT 형식의 데이터를 YOLO 학습 데이터로 변환할 수 있습니다.
 ```bash
-python Mytransform.py
+python src/Mytransform.py
 ```

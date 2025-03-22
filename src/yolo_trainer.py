@@ -1,9 +1,5 @@
 import torch
 from ultralytics import YOLO
-import numpy as np
-import cv2
-from PIL import Image, ImageDraw
-import os 
 
 class YOLOTrainer:
     def __init__(self, model_path: str = None, config_path: str = None, weight_path: str = None,  device: str = None):
