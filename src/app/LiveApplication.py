@@ -7,7 +7,7 @@ from picamera import PiCamera
 from picamera.array import PiRGBArray
 from src.app.Density import DensityManager
 from src.app.Pyplot import PlotManager
-from src.yolo_trainer import YOLOTrainer
+from src.yolo_utils import YOLOTrainer
 
 class ApplicationHandler:
     def __init__(self, weight_path):
