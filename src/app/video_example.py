@@ -45,7 +45,6 @@ class VideoStreamHandler:
 
             # YOLO 예측 결과 -> SORT 트래커에 입력
             boxes = results['prediction']['boxes']
-            print(boxes)
             confidences = results['prediction']['scores']  # 실제 confidence 사용
             class_ids = results['prediction']['classes']  # 실제 클래스 아이디 사용
             

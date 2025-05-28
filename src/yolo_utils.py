@@ -52,9 +52,13 @@ def predict_yolo(
         **kwargs
         )[0]
 
-    boxes = result.boxes.xyxy
-    scores = result.boxes.conf
-    classes = result.boxes.cls
+    target_cls = 0
+
+    boxes = result.boxes
+    filtered_boxes = boxes[boxes.cls == target_cls]
+    boxes = filtered_boxes.xyxy
+    scores = filtered_boxes.conf
+    classes = filtered_boxes.cls
 
     if isinstance(boxes, torch.Tensor): boxes = boxes.tolist()
     if isinstance(scores, torch.Tensor): scores = scores.tolist()
