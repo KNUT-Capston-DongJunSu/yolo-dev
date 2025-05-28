@@ -59,25 +59,30 @@ def convert_odgt_to_yolo(odgt_path, images_path, output_dir, class_ids={"fbox": 
         print(f"[Warning] 누락된 이미지: {len(mismatched_images)}개")
 
 if __name__=="__main__":
-    # 훈련 데이터 변환
-    convert_odgt_to_yolo(
-        odgt_path="./datasets/labels/69.Indoor_까페노아069(663).json",
-        images_path="./datasets/images/val",
-        output_dir="./datasets/labels/val",
-        class_ids={"bbox": 0}
-    )
+    folder_path = './datasets/labels/'  # 예: 'C:/Users/you/data'
 
-    # # 검증 데이터 변환
-    # convert_odgt_to_yolo(
-    #     odgt_path="./datasets/labels/67.Indoor_까페노아067(662).json",
-    #     images_path="./datasets/images/train",
-    #     output_dir="./datasets/labels/train",
-    #     class_ids={"bbox": 0}  
-    # )
+    json_paths = [
+        os.path.join(folder_path, file)
+        for file in os.listdir(folder_path)
+        if file.endswith('.json')
+    ]
 
-    # convert_odgt_to_yolo(
-    #     odgt_path="./datasets/labels/68.Indoor_까페노아068(636).json",
-    #     images_path="./datasets/images/train",
-    #     output_dir="./datasets/labels/train",
-    #     class_ids={"bbox": 0}  
-    # )
+    for path in json_paths:
+        if '/datasets/labels/96.Indoor_북촌까페096(661)' in path or '/datasets/labels/208.Indoor_까페노아208(660).json' in path:
+            convert_odgt_to_yolo(
+                odgt_path=path,
+                images_path="./datasets/images/val",
+                output_dir="./datasets/labels/val",
+                class_ids={"bbox": 0}
+            )
+        else: 
+            convert_odgt_to_yolo(
+                odgt_path=path,
+                images_path="./datasets/images/train",
+                output_dir="./datasets/labels/train",
+                class_ids={"bbox": 0}  
+            )
+
+
+    
+    

@@ -17,9 +17,6 @@ class VideoStreamHandler:
         self.model_path = model_path
         self.scale = 0.5  # 비율 설정
 
-        # YOLO 모델, 밀도 관리자
-        self.density_manager = DensityManager(frame_height=480, camera_height=3.0)
-        self.pyplot_manager = PlotManager()
         self.output_video = output_video
         save_dir = os.path.dirname(self.output_video)
         os.makedirs(save_dir, exist_ok=True)
@@ -27,13 +24,6 @@ class VideoStreamHandler:
         # 큐 초기화
         self.frame_queue = Queue(maxsize=10)
         self.result_queue = Queue(maxsize=10)
-    
-        self.tracker = OCSort(  # OCSort 객체 초기화
-            det_thresh=0.07,  # detection threshold
-            iou_threshold=0.3,  # 박스 간 IoU threshold
-            max_age=30,
-            min_hits=3
-        )
 
     def process_frames(self):
         """프레임을 YOLO로 처리하고 결과를 큐에 저장"""
@@ -47,7 +37,7 @@ class VideoStreamHandler:
                 model_path=self.model_path,
                 frame=frame,
                 imgsz=1280,
-                conf=0.05,     
+                conf=0.25,     
                 save=False,
                 half=True,
                 stream=False
@@ -84,7 +74,7 @@ class VideoStreamHandler:
 
         return cv2.cvtColor(np.array(image), cv2.COLOR_RGB2BGR)
 
-    def start_stream(self):
+    def start_stream(self, camera_height, det_thresh):
         """메인 프로세스에서 비디오 읽기 및 결과 저장"""
         cap = cv2.VideoCapture(self.video_path)
         if not cap.isOpened():
@@ -100,15 +90,23 @@ class VideoStreamHandler:
             (frame_width, frame_height)
             )
 
-        self.pyplot_manager.fps = fps
+        # YOLO 모델, 밀도 관리자
+        self.density_manager = DensityManager(frame_height, camera_height)
+        self.pyplot_manager = PlotManager(fps)
         
+        self.tracker = OCSort(  # OCSort 객체 초기화
+            det_thresh=det_thresh,  
+            max_age=30,
+            min_hits=3
+        )
+
         # 프로세스 생성
         process_process = Process(target=self.process_frames)
         process_process.start()
 
         try:
             frame_count = 0  # 프레임 카운터
-            graph_update_interval = max(1, fps // 2)  # 0.5초 간격으로 그래프 업데이트
+            # graph_update_interval = max(1, fps // 2)  # 0.5초 간격으로 그래프 업데이트
 
             while cap.isOpened():
                 ret, frame = cap.read()
@@ -136,8 +134,8 @@ class VideoStreamHandler:
                     video_writer.write(plot_bgr)
                     cv2.imshow("YOLO Stream", plot_bgr)
 
-                    if frame_count % graph_update_interval == 0:
-                        self.pyplot_manager.update_Live_pyplot(density)
+                    # if frame_count % graph_update_interval == 0:
+                    self.pyplot_manager.update_Live_pyplot(density)
 
                 frame_count += 1
                 if cv2.waitKey(1) & 0xFF == ord('q'):

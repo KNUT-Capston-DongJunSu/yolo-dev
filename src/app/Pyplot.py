@@ -11,9 +11,9 @@ class PlotManager:
     # 설정: 표시할 데이터의 최대 길이
     max_length = 100  # x축에 표시할 데이터 수
     
-    def __init__(self, video_filename="results/graph_output.avi"):
+    def __init__(self, fps, video_filename="results/graph_output.mp4"):
         # 그래프 초기 설정
-        self.video_fps = 10
+        self.video_fps = fps
 
         self.fig, self.ax = plt.subplots()
         self.x_data = deque(maxlen=self.max_length)  # 고정 길이 큐 (최대 max_length 개 유지)
@@ -33,14 +33,6 @@ class PlotManager:
         self.video_filename = video_filename
         self.video_writer = None  # 동영상 writer 초기화
         print(f"Saving video to {self.video_filename}")
-
-    @property
-    def fps(self):
-        return self.video_fps
-    
-    @fps.setter
-    def fps(self, fps):
-        self.video_fps = fps
 
     def init_video_writer(self):
         """VideoWriter 객체 초기화"""

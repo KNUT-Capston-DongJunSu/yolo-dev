@@ -3,8 +3,8 @@ import math
 class DensityManager:
     def __init__(self, camera_height, frame_height):
         # Pi Camera 기본 시야각
-        self.fov_horizontal = 62.2  # degrees
-        self.fov_vertical = 48.8  # degrees
+        self.fov_horizontal = 65  # degrees
+        self.fov_vertical = 49  # degrees
 
         # 카메라 높이 및 해상도
         self.camera_height = camera_height  # 카메라 높이 (m)
@@ -14,28 +14,28 @@ class DensityManager:
         self.alpha = 0.8  # 지수 이동 평균 가중치
         self.previous_max_height = None
 
-    def calculate_camera_distance(self, camera_height, y_bottom, frame_height, fov_vertical):
+    def calculate_camera_distance(self, y_bottom):
         # 객체의 각도 계산
-        theta = math.radians(fov_vertical / 2) * (1 - y_bottom / frame_height)
+        theta = math.radians(self.fov_vertical / 2) * (1 - y_bottom / self.frame_height)
         
         # 거리 계산
-        distance = camera_height / math.tan(theta)
+        distance = self.camera_height / math.tan(theta)
         return distance
 
-    def calculate_real_height(self, object_pixel_height, frame_height, fov_vertical, camera_distance):
+    def calculate_real_height(self, object_pixel_height, camera_distance):
         # 카메라의 투영 영역 높이 계산
-        h_view = 2 * camera_distance * math.tan(math.radians(fov_vertical / 2))
+        h_view = 2 * camera_distance * math.tan(math.radians(self.fov_vertical / 2))
         
         # 실제 높이 계산
-        real_height = (object_pixel_height / frame_height) * h_view
+        real_height = (object_pixel_height / self.frame_height) * h_view
         return real_height
 
-    def calculate_region_volume(self, camera_height, fov_horizontal, fov_vertical, max_height):
+    def calculate_region_volume(self, max_height):
         # 너비 계산
-        width = 2 * camera_height * math.tan(math.radians(fov_horizontal / 2))
+        width = 2 * self.camera_height * math.tan(math.radians(self.fov_horizontal / 2))
         
         # 높이 계산
-        area_height = 2 * camera_height * math.tan(math.radians(fov_vertical / 2))
+        area_height = 2 * self.camera_height * math.tan(math.radians(self.fov_vertical / 2))
         
         # 부피 계산
         volume = width * area_height * max_height
@@ -61,12 +61,10 @@ class DensityManager:
             pixel_height = obj["pixel_height"]
             
             # 카메라와 객체 간 거리 계산
-            camera_distance = self.calculate_camera_distance(
-                self.camera_height, y_bottom, self.frame_height, self.fov_vertical)
+            camera_distance = self.calculate_camera_distance(y_bottom)
             
             # 객체 실제 높이 계산
-            real_height = self.calculate_real_height(
-                pixel_height, self.frame_height, self.fov_vertical, camera_distance)
+            real_height = self.calculate_real_height(pixel_height, camera_distance)
             object_heights.append(real_height)
 
         if len(object_heights)==0:  # 객체가 탐지되지 않은 경우
@@ -86,8 +84,7 @@ class DensityManager:
         print(f"스무딩 후 최대 높이: {max_height:.2f} m")
 
         # 관찰 구역 부피 계산
-        volume, width, area_height = self.calculate_region_volume(
-            self.camera_height, self.fov_horizontal, self.fov_vertical, max_height)
+        volume, width, area_height = self.calculate_region_volume(max_height)
         print(f"구역 부피: {volume:.2f} ㎥")
         print(f"구역 너비: {width:.2f} m")
         print(f"구역 높이 (면적용): {area_height:.2f} m")

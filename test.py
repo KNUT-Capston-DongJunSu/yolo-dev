@@ -4,16 +4,13 @@ from ultralytics import YOLO
 from src import train_yolo
 from src import VideoStreamHandler
 
-def test():
-    BEST = "results/train12-600장-1280size/weights/best.pt"
-    DEFAULT = "yolov8s.pt"
-    model = YOLO(BEST)   
-    # model = YOLO(DEFAULT)  
+CUSTOM_MODEL = "results/train12-600장-1280size/weights/best.pt"
+DEFAULT = "./yolov8s.pt"
 
-    # output_dir = "results/predict/default"
-    output_dir = "results/predict/train12-600장-1280size"
+def test(model_path, output_dir):    
     os.makedirs(output_dir, exist_ok=True)
-        
+    
+    model = YOLO(model_path)     
     results = model.predict(
         source="datasets/test",
         conf=0.05,
@@ -47,23 +44,23 @@ def img_shape(image_path):
     print(f"이미지 크기: {width}x{height}")
 
 if __name__=="__main__":
-    # test()
+    # test(CUSTOM_MODEL, "results/predict/train12-600장-1280size")
 
-    # train_yolo(
-    #     model_path="yolov8s.pt",
-    #     config_path="configs/custom.yaml",
-    #     epochs=15,
-    #     imgsz=1280,
-    #     batch=4,
-    #     resume=False, 
-    #     project="results",
-    #     name="train14-1200장-1280size"
-    #     )
+    train_yolo(
+        model_path="yolov8s.pt",
+        config_path="configs/custom.yaml",
+        epochs=7,
+        imgsz=1280,
+        batch=4,
+        resume=False, 
+        project="results",
+        name="train15"
+        )
         
-    video_path = "datasets/test/test.mp4"
+    # video_path = "datasets/test/test2.mp4"
     # model_path = "results/train13-1200장-1280size/weights/best.pt"
-    model_path = "results/train16/weights/best.pt"
-    output_video = "results/predict/video/predict.mp4"
+    # # model_path = "results/train16/weights/best.pt"
+    # output_video = "results/predict/video/predict.mp4"
 
-    video_handler = VideoStreamHandler(video_path, model_path, output_video)
-    video_handler.start_stream()
+    # video_handler = VideoStreamHandler(video_path, model_path, output_video)
+    # video_handler.start_stream(1.5, 0.3)
