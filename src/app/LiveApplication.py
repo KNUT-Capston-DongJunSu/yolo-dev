@@ -3,11 +3,11 @@ import threading
 import cv2
 import numpy as np
 from PIL import Image, ImageDraw
-from picamera import PiCamera
-from picamera.array import PiRGBArray
+# from picamera import PiCamera
+# from picamera.array import PiRGBArray
 from src.app.Density import DensityManager
 from src.app.Pyplot import PlotManager
-from src.yolo_utils import YOLOTrainer
+# from src.yolo_utils import YOLOTrainer
 
 class ApplicationHandler:
     def __init__(self, weight_path):

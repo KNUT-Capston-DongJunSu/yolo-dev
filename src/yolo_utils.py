@@ -1,15 +1,56 @@
 import torch
 from ultralytics import YOLO
 
-def train_yolo(model_path, config_path, **kwargs):
+def train_yolo(
+    model_path, 
+    config_path, 
+    epochs=100,
+    imgsz=640,
+    batch=16,
+    project='results',
+    name=None,
+    lr0=0.01,
+    optimizer='SGD',
+    **kwargs
+    ):
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
     model = YOLO(model_path).to(device)
-    model.train(data=config_path, device=device, **kwargs)
+    return model.train(
+        data=config_path,
+        epochs=epochs,
+        imgsz=imgsz,
+        batch=batch,
+        project=project,
+        name=name,
+        lr0=lr0,
+        optimizer=optimizer,
+        device=device,
+        **kwargs
+    )
 
-def predict_yolo(model_path, frame, **kwargs):
+def predict_yolo(
+    model_path, 
+    frame,
+    stream=False,
+    imgsz=640,
+    conf=0.25,
+    iou=0.45,
+    device=None,
+    max_det=300,
+    **kwargs
+    ):
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
     model = YOLO(model_path).to(device)
-    result = model.predict(source=frame, device=device, **kwargs)[0]
+    result =  model.predict(
+        source=frame,
+        stream=stream,
+        imgsz=imgsz,
+        conf=conf,
+        iou=iou,
+        device=device,
+        max_det=max_det,
+        **kwargs
+        )[0]
 
     boxes = result.boxes.xyxy
     scores = result.boxes.conf

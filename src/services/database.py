@@ -1,4 +1,4 @@
-import mysql.connector
+# import mysql.connector
 from datetime import datetime
 from configs.config import DB_CONFIG
 

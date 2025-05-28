@@ -2,22 +2,23 @@ import cv2
 import os
 import signal
 import sys
+import torch
 import numpy as np
+from ocsort import OCSort
+from ultralytics import YOLO
+from PIL import Image, ImageDraw
 from multiprocessing import Process, Queue
 from src.app.Density import DensityManager
 from src.app.Pyplot import PlotManager
-from src.yolo_utils import YOLOTrainer
-from src.utils.shared_sort import *  # SORT 임포트 추가
-from PIL import Image, ImageDraw
+from src.yolo_utils import predict_yolo
 
 class VideoStreamHandler:
-    def __init__(self, video_path, weight_path, save_dir, output_video):
+    def __init__(self, video_path, model_path, save_dir, output_video):
         self.video_path = video_path
+        self.model_path = model_path
         self.scale = 0.5  # 비율 설정
-        self.fps = 30
 
         # YOLO 모델, 밀도 관리자
-        self.trainer = YOLOTrainer(weight_path=weight_path)
         self.density_manager = DensityManager(frame_height=480, camera_height=3.0)
         self.pyplot_manager = PlotManager()
         self.save_dir = save_dir
@@ -25,32 +26,48 @@ class VideoStreamHandler:
         # 큐 초기화
         self.frame_queue = Queue(maxsize=10)
         self.result_queue = Queue(maxsize=10)
+    
+        self.tracker = OCSort(  # OCSort 객체 초기화
+            det_thresh=0.07,  # detection threshold
+            iou_threshold=0.3,  # 박스 간 IoU threshold
+            max_age=30,
+            min_hits=3
+        )
 
         self.output_video = output_video
-        self.tracker = Sort()  # SORT 트래커 초기화 추가
 
     def process_frames(self):
         """프레임을 YOLO로 처리하고 결과를 큐에 저장"""
         while True:
-            frame = self.frame_queue.get()
+            frame, frame_id = self.frame_queue.get()
             if frame is None:  # 종료 신호
                 self.result_queue.put(None)
                 break
-
-            results = self.trainer.predict(
+           
+            results = predict_yolo(
+                model_path=self.model_path,
                 frame=frame,
-                conf_threshold=0.05,
-                iou_threshold=0.7,
+                imgsz=1280,
+                conf=0.05,     
                 save=False,
-                half=True
+                half=True,
+                stream=False
             )
+
             # YOLO 예측 결과 -> SORT 트래커에 입력
-            boxes = results["prediction"]["boxes"]
-            confidences = [1.0] * len(boxes)  # SORT는 신뢰도 값도 필요
-            tracker_input = np.array([box + [conf] for box, conf in zip(boxes, confidences)])
+            boxes = results['prediction']['boxes']
+            print(boxes)
+            confidences = results['prediction']['scores']  # 실제 confidence 사용
+            class_ids = results['prediction']['classes']  # 실제 클래스 아이디 사용
+            
+            data_list = [box + [conf, cls] for box, conf, cls in zip(boxes, confidences, class_ids)]
+            tracker_input = torch.tensor(data_list, dtype=torch.float32)
 
             # SORT 업데이트 및 트래킹 결과 받기
-            tracked_objects = self.tracker.update(tracker_input)
+            if tracker_input.shape[0] == 0:
+                tracked_objects = []  # 또는 빈 텐서 등, 트래커가 처리할 수 없는 빈 입력에 대비
+            else:
+                tracked_objects = self.tracker.update(tracker_input, frame_id)
 
             density = self.density_manager.calculate_density(results["prediction"])
             plot_bgr = self.custom_plot(frame, tracked_objects)  # Bounding box 그리기
@@ -62,7 +79,7 @@ class VideoStreamHandler:
         draw = ImageDraw.Draw(image)
 
         for obj in tracked_objects:
-            x1, y1, x2, y2, track_id = map(int, obj)
+            x1, y1, x2, y2, track_id, *rest  = map(int, obj)
             draw.rectangle([x1, y1, x2, y2], outline="blue", width=2)
             draw.text((x1, y1 - 10), f"ID: {track_id}", fill="red")
 
@@ -80,6 +97,8 @@ class VideoStreamHandler:
         video_writer = cv2.VideoWriter(self.output_video, cv2.VideoWriter_fourcc(*'mp4v'),
                                     fps, (frame_width, frame_height))
 
+        self.pyplot_manager.fps = fps
+        
         # 프로세스 생성
         process_process = Process(target=self.process_frames)
         process_process.start()
@@ -95,7 +114,23 @@ class VideoStreamHandler:
                     break
 
                 frame_resized = cv2.resize(frame, None, fx=self.scale, fy=self.scale, interpolation=cv2.INTER_LINEAR)
-                self.frame_queue.put(frame_resized)
+                rgb_frame = cv2.cvtColor(frame_resized, cv2.COLOR_BGR2RGB)
+                
+                self.frame_queue.put((rgb_frame, frame_count))
+                """
+                [249 160 127]
+                [245 155 113]
+                [248 152 110]
+                [244 148 106]
+                [244 144  92]
+                [247 140  79]
+                [247 128  64]
+                [246 124  59]
+                [235 127  44]
+                [244 213 122]
+                [250 255 201]
+                [249 255 214]
+                """
 
                 # 처리된 결과를 받아 저장
                 while not self.result_queue.empty():
@@ -109,7 +144,7 @@ class VideoStreamHandler:
                     if frame_count % graph_update_interval == 0:
                         self.pyplot_manager.update_Live_pyplot(
                             current_value=density,
-                            filename=f"results/density/graph{frame_count}.png"
+                            filename=f"results/density/graph{frame_count}.png",
                         )
 
                 frame_count += 1
@@ -151,13 +186,3 @@ class VideoStreamHandler:
             print("Processing complete. Exiting program...")
             sys.exit(0)  # 강제 종료
 
-
-if __name__ == "__main__":
-    video_path = "datasets/video/ski.mp4"
-    weight_path = "results/train_preprocessing/weights/best.pt"
-    save_dir = "results/predict/"
-    output_video = "results/predict/ski_predict_tracking.mp4"
-
-    os.makedirs(save_dir, exist_ok=True)
-    video_handler = VideoStreamHandler(video_path, weight_path, save_dir, output_video)
-    video_handler.start_stream()

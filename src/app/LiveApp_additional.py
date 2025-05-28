@@ -4,15 +4,15 @@ import time
 import cv2
 import numpy as np
 from PIL import Image, ImageDraw
-from picamera import PiCamera
-from picamera.array import PiRGBArray
+# from picamera import PiCamera
+# from picamera.array import PiRGBArray
 from src.app.Density import DensityManager
 from src.app.Pyplot import PlotManager
 from src.services.email_transfer import EmailManager
 from src.services.ftp_transfer import FTPmanager
 from src.services.html_generator import HtmlManager
 from src.services.database import DatabaseManager
-from src.yolo_utils import YOLOTrainer
+# from src.yolo_utils import YOLOTrainer
 
 class AdditionalApplicationHandler:
     def __init__(self, weight_path, db_config, email_config, ftp_config):
