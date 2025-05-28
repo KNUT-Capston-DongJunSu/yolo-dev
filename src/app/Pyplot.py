@@ -46,10 +46,14 @@ class PlotManager:
         """VideoWriter 객체 초기화"""
         if self.video_writer is None:
             width, height = self.fig.canvas.get_width_height()
-            fourcc = cv2.VideoWriter_fourcc(*'XVID')  # 동영상 코덱
-            self.video_writer = cv2.VideoWriter(self.video_filename, fourcc, self.video_fps, (width, height))
+            self.video_writer = cv2.VideoWriter(
+                self.video_filename, 
+                cv2.VideoWriter_fourcc(*'mp4v'), 
+                self.video_fps, 
+                (width, height)
+                )
 
-    def update_Live_pyplot(self, current_value, filename="graph.png"):
+    def update_Live_pyplot(self, current_value):
         current_time = datetime.now()  # 현재 시간
         
         # 최신 데이터를 큐에 추가 (최대 길이를 넘으면 자동 제거)

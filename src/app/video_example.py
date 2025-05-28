@@ -5,7 +5,6 @@ import sys
 import torch
 import numpy as np
 from ocsort import OCSort
-from ultralytics import YOLO
 from PIL import Image, ImageDraw
 from multiprocessing import Process, Queue
 from src.app.Density import DensityManager
@@ -13,7 +12,7 @@ from src.app.Pyplot import PlotManager
 from src.yolo_utils import predict_yolo
 
 class VideoStreamHandler:
-    def __init__(self, video_path, model_path, save_dir, output_video):
+    def __init__(self, video_path, model_path, output_video):
         self.video_path = video_path
         self.model_path = model_path
         self.scale = 0.5  # 비율 설정
@@ -21,7 +20,9 @@ class VideoStreamHandler:
         # YOLO 모델, 밀도 관리자
         self.density_manager = DensityManager(frame_height=480, camera_height=3.0)
         self.pyplot_manager = PlotManager()
-        self.save_dir = save_dir
+        self.output_video = output_video
+        save_dir = os.path.dirname(self.output_video)
+        os.makedirs(save_dir, exist_ok=True)
 
         # 큐 초기화
         self.frame_queue = Queue(maxsize=10)
@@ -33,8 +34,6 @@ class VideoStreamHandler:
             max_age=30,
             min_hits=3
         )
-
-        self.output_video = output_video
 
     def process_frames(self):
         """프레임을 YOLO로 처리하고 결과를 큐에 저장"""
@@ -94,8 +93,12 @@ class VideoStreamHandler:
         fps = int(cap.get(cv2.CAP_PROP_FPS))
         frame_width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH) * self.scale)
         frame_height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT) * self.scale)
-        video_writer = cv2.VideoWriter(self.output_video, cv2.VideoWriter_fourcc(*'mp4v'),
-                                    fps, (frame_width, frame_height))
+        video_writer = cv2.VideoWriter(
+            self.output_video, 
+            cv2.VideoWriter_fourcc(*'mp4v'),
+            fps, 
+            (frame_width, frame_height)
+            )
 
         self.pyplot_manager.fps = fps
         
@@ -113,24 +116,16 @@ class VideoStreamHandler:
                     self.frame_queue.put(None)  # 종료 신호
                     break
 
-                frame_resized = cv2.resize(frame, None, fx=self.scale, fy=self.scale, interpolation=cv2.INTER_LINEAR)
+                frame_resized = cv2.resize(
+                    frame, 
+                    None, 
+                    fx=self.scale, 
+                    fy=self.scale, 
+                    interpolation=cv2.INTER_LINEAR
+                    )
                 rgb_frame = cv2.cvtColor(frame_resized, cv2.COLOR_BGR2RGB)
                 
                 self.frame_queue.put((rgb_frame, frame_count))
-                """
-                [249 160 127]
-                [245 155 113]
-                [248 152 110]
-                [244 148 106]
-                [244 144  92]
-                [247 140  79]
-                [247 128  64]
-                [246 124  59]
-                [235 127  44]
-                [244 213 122]
-                [250 255 201]
-                [249 255 214]
-                """
 
                 # 처리된 결과를 받아 저장
                 while not self.result_queue.empty():
@@ -142,10 +137,7 @@ class VideoStreamHandler:
                     cv2.imshow("YOLO Stream", plot_bgr)
 
                     if frame_count % graph_update_interval == 0:
-                        self.pyplot_manager.update_Live_pyplot(
-                            current_value=density,
-                            filename=f"results/density/graph{frame_count}.png",
-                        )
+                        self.pyplot_manager.update_Live_pyplot(density)
 
                 frame_count += 1
                 if cv2.waitKey(1) & 0xFF == ord('q'):

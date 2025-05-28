@@ -1,4 +1,5 @@
 import cv2, os
+from PIL import Image
 from ultralytics import YOLO
 from src import train_yolo
 from src import VideoStreamHandler
@@ -40,45 +41,29 @@ def test():
 
         cv2.imwrite(output_path, original_img)
 
-def resume(last_pt_path):
-    model = YOLO(last_pt_path)  # load a partially trained model
-    model.train(resume=True)
+def img_shape(image_path):
+    img = Image.open(image_path)
+    width, height = img.size
+    print(f"이미지 크기: {width}x{height}")
 
 if __name__=="__main__":
     # test()
+
     # train_yolo(
     #     model_path="yolov8s.pt",
     #     config_path="configs/custom.yaml",
     #     epochs=15,
     #     imgsz=1280,
     #     batch=4,
+    #     resume=False, 
     #     project="results",
     #     name="train14-1200장-1280size"
     #     )
         
-    # from PIL import Image
-
-    # img = Image.open("datasets/images/train1/Indoor_까페노아067_001.jpg")
-    # width, height = img.size
-
-    # print(f"이미지 크기: {width}x{height}")
-
-    # model = YOLO("./results/train13-1200장-1280size/weights/last.pt")
-    # model.train(
-    #     resume=False, 
-    #     epochs=35, 
-    #     imgsz=1280, 
-    #     batch=4, 
-    #     project='results',
-    #     name='train11'
-    #     )
-
     video_path = "datasets/test/test.mp4"
     # model_path = "results/train13-1200장-1280size/weights/best.pt"
     model_path = "results/train16/weights/best.pt"
-    save_dir = "results/predict/video"
     output_video = "results/predict/video/predict.mp4"
 
-    os.makedirs(save_dir, exist_ok=True)
-    video_handler = VideoStreamHandler(video_path, model_path, save_dir, output_video)
+    video_handler = VideoStreamHandler(video_path, model_path, output_video)
     video_handler.start_stream()
