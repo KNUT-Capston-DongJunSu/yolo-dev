@@ -49,18 +49,17 @@ if __name__=="__main__":
     # train_yolo(
     #     model_path="yolov8s.pt",
     #     config_path="configs/custom.yaml",
-    #     epochs=7,
-    #     imgsz=1280,
-    #     batch=4,
+    #     epochs=5,
+    #     imgsz=640,
+    #     batch=12,
     #     resume=False, 
     #     project="results",
     #     name="train15"
     #     )
         
     video_path = "datasets/test/test3.mp4"
-    model_path = "results/train12-600장-1280size/weights/best.pt"
-    # model_path = "results/train16/weights/best.pt"
+    model_path = "results/train15/weights/best.pt"
     output_video = "results/predict/video/predict.mp4"
 
-    video_handler = VideoStreamHandler(video_path, DEFAULT, output_video)
+    video_handler = VideoStreamHandler(video_path, model_path, output_video)
     video_handler.start_stream(1.5, 0.3)
