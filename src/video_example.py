@@ -6,7 +6,7 @@ from queue import Empty, Full
 from multiprocessing import Process, Queue
 from src.app.Density import DensityManager
 from src.app.Pyplot import PlotManager
-from src.yolo_utils import predict_yolo
+from src.app.yolo_utils import predict_yolo
 from src.app.utils import custom_plot
 from src.app.utils import update_tracks
 
