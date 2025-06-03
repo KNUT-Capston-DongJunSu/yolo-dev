@@ -47,14 +47,15 @@ def custom_plot(frame, tracked_objects):
         cv2.rectangle(
             original_img, 
             (x1, y1), (x2, y2), 
-            color=(0, 0, 255), 
-            thickness=2)
+            color=(255, 0, 0), 
+            thickness=1
+            )
         cv2.putText(
             original_img, 
             f"ID: {track_id}", 
-            (x1, y1 - 10), 
+            (x1, y1), 
             cv2.FONT_HERSHEY_SIMPLEX, 
-            0.6, (0, 0, 255), 2
+            0.3, (0, 0, 0), 1
             )
 
     cv2.putText(
@@ -62,7 +63,7 @@ def custom_plot(frame, tracked_objects):
         f"{len(tracked_objects)} people", 
         (width - 200, 30), 
         cv2.FONT_HERSHEY_SIMPLEX, 
-        1, (255, 255, 255), 4
+        1, (255, 255, 255), 2
         )
     
     return original_img

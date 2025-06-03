@@ -33,11 +33,10 @@ def predict_yolo(
     frame,
     stream=False,
     imgsz=640,
-    conf=0.25,
-    iou=0.45,
+    conf=0.5,
+    iou=0.7,
     device=None,
     max_det=300,
-    class_conf_thres=0.6,  # 추가
     **kwargs
     ):
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
@@ -56,9 +55,6 @@ def predict_yolo(
 
     boxes = result.boxes
     filtered_boxes = boxes[boxes.cls == target_cls]
-    
-    class_conf_mask = filtered_boxes.conf > class_conf_thres
-    filtered_boxes = filtered_boxes[class_conf_mask]
     
     boxes = filtered_boxes.xyxy
     scores = filtered_boxes.conf
