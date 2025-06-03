@@ -4,15 +4,12 @@ from ultralytics import YOLO
 from src import train_yolo
 from src import VideoStreamHandler
 
-CUSTOM_MODEL = "results/train12-600장-1280size/weights/best.pt"
-DEFAULT = "./yolov8s.pt"
-
-def test(model_path, output_dir):    
+def test(model_path, img_path, output_dir):    
     os.makedirs(output_dir, exist_ok=True)
     
     model = YOLO(model_path)     
     results = model.predict(
-        source="datasets/test",
+        source=img_path,
         conf=0.05,
         imgsz=1280,
         save=False,          # 저장 안 하고 메모리에서 직접 처리
@@ -28,7 +25,7 @@ def test(model_path, output_dir):
         boxes = res.boxes.xyxy.cpu().numpy().astype(int)  # 전체 박스 좌표 (N,4)
 
         for (x1, y1, x2, y2) in boxes:
-            cv2.rectangle(original_img, (x1, y1), (x2, y2), color=(0, 0, 255), thickness=6)
+            cv2.rectangle(original_img, (x1, y1), (x2, y2), color=(0, 0, 255), thickness=2)
 
         cv2.putText(original_img, f"{len(boxes)} people", (width - 200, 30),
                     cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 4)
@@ -44,7 +41,12 @@ def img_shape(image_path):
     print(f"이미지 크기: {width}x{height}")
 
 if __name__=="__main__":
-    # test(DEFAULT, "results/predict/default")
+    # test(
+    #     # "results/train/weights/best.pt",
+    #     "SCUT_HEAD.pt",
+    #     "datasets/test/SCUT-HEAD", 
+    #     "results/predict/SCUT-HEAD-self"
+    #     )
 
     # train_yolo(
     #     model_path="yolov8s.pt",
@@ -57,9 +59,10 @@ if __name__=="__main__":
     #     name="train15"
     #     )
         
-    video_path = "datasets/test/test3.mp4"
-    model_path = "results/train15/weights/best.pt"
-    output_video = "results/predict/video/predict.mp4"
+    video_path = "datasets/test/video/test1132.mp4"
+    model_path = "results/train/weights/best.pt"
+    # model_path = "SCUT_HEAD.pt"
+    output_video = "results/predict/video/our_model_demo3.mp4"
 
-    video_handler = VideoStreamHandler(video_path, model_path, output_video)
-    video_handler.start_stream(1.5, 0.3)
+    video_handler = VideoStreamHandler(video_path, model_path, output_video, 1)
+    video_handler.start_stream(3)

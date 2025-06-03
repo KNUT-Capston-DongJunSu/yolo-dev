@@ -3,7 +3,7 @@ import os
 from PIL import Image
 import numpy as np
 
-image_folder = './datasets/test/111/'
+image_folder = './datasets/test/market/'
 output_video = 'output_video.mp4'
 
 images = sorted([img for img in os.listdir(image_folder) if img.lower().endswith(".jpg")])

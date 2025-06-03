@@ -37,11 +37,12 @@ def predict_yolo(
     iou=0.45,
     device=None,
     max_det=300,
+    class_conf_thres=0.6,  # 추가
     **kwargs
     ):
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
     model = YOLO(model_path).to(device)
-    result =  model.predict(
+    result = model.predict(
         source=frame,
         stream=stream,
         imgsz=imgsz,
@@ -51,11 +52,14 @@ def predict_yolo(
         max_det=max_det,
         **kwargs
         )[0]
-
     target_cls = 0
 
     boxes = result.boxes
     filtered_boxes = boxes[boxes.cls == target_cls]
+    
+    class_conf_mask = filtered_boxes.conf > class_conf_thres
+    filtered_boxes = filtered_boxes[class_conf_mask]
+    
     boxes = filtered_boxes.xyxy
     scores = filtered_boxes.conf
     classes = filtered_boxes.cls
@@ -72,12 +76,6 @@ def predict_yolo(
                 "classes": classes
             },
             "plot": plot}
-    
-if __name__=="__main__":
-    train_yolo(model_path='models/yolov5s.pt', 
-        config_path='configs/custom.yaml', 
-        epochs=100, imgsz=256, batch_size=8, 
-        project='results', name='train1')
 
    
     
