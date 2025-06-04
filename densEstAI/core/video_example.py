@@ -40,11 +40,7 @@ class VideoStreamHandler:
         self.density_manager = DensityManager(frame_height, camera_height)
         self.pyplot_manager = PlotManager(fps)
 
-        self.tracker = OCSort(  # OCSort 객체 초기화
-            det_thresh=det_thresh,  
-            max_age=30,
-            min_hits=3
-        )
+        self.tracker = OCSort(det_thresh=det_thresh, max_age=30, min_hits=3)
 
     def process_frames(self):
         """프레임을 YOLO로 처리하고 결과를 큐에 저장"""
