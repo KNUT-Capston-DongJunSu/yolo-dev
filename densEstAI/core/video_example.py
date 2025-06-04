@@ -4,44 +4,37 @@ import torch
 from ocsort import OCSort
 from queue import Empty, Full
 from multiprocessing import Process, Queue
-from src.app.Density import DensityManager
-from src.app.Pyplot import PlotManager
-from src.app.yolo_utils import predict_yolo
-from src.app.utils import custom_plot
-from src.app.utils import update_tracks
+from densEstAI.core.calc_density import DensityManager
+from densEstAI.core.plot_dens import PlotManager
+from densEstAI.core.yolo_api import YoloAPI
+from densEstAI.core.utils import draw_tracking_boxes
+from densEstAI.core.utils import filter_tracks_by_class 
+from densEstAI.core.utils import get_best_model
 
 class VideoStreamHandler:
-    def __init__(self, video_path, model_path, output_video):
+    def __init__(self, video_path, model_path="results/train/weights", camera_height=3.0):
         self.video_path = video_path
-        self.model_path = model_path
-        self.output_video = output_video
-        save_dir = os.path.dirname(self.output_video)
-        os.makedirs(save_dir, exist_ok=True)
 
         self.frame_queue = None
-        self.result_queue = None        
+        self.result_queue = None    
+        self.density_manager = None 
+        self.pyplot_manager = None    
         self.frame_count = 0  # 프레임 카운터
+        self.camera_height = camera_height
 
-<<<<<<< HEAD:src/video_example.py
-        self.tracker = OCSort(  # OCSort 객체 초기화
-            det_thresh=0.3,  
-            max_age=30,
-            min_hits=3
-        )
-=======
-        self.tracker = OCSort(det_thresh=det_thresh, max_age=30, min_hits=3)
->>>>>>> fd3753b3b4c3089aea86ce3d060bfe0ab5cf6c83:densEstAI/core/video_example.py
+        self.tracker = OCSort(det_thresh=0.3, max_age=30, min_hits=3)
+        self.model = YoloAPI(get_best_model(model_path))
 
     def process_frames(self):
         """프레임을 YOLO로 처리하고 결과를 큐에 저장"""
         while True:
             frame, frame_id = self.frame_queue.get()
             if frame is None:  
+                self.result_queue.put(None)
                 break
             
             rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-            results = predict_yolo(
-                model_path=self.model_path,
+            results = self.model.smart_predict_yolo(
                 frame=rgb_frame,
                 save=False,
                 half=True,
@@ -61,7 +54,7 @@ class VideoStreamHandler:
                 tracked_objects = []  # 또는 빈 텐서 등, 트래커가 처리할 수 없는 빈 입력에 대비
             else:
                 tracked_objects = self.tracker.update(tracker_input, frame_id)
-                # filtered_ids = self.update_tracks(tracked_objects)
+                # filtered_ids = self.filter_tracks_by_class(tracked_objects)
                 # if len(filtered_ids) != 0:
                 #     tracked_ids = tracked_objects[:, 4].astype(int)
                 #     indices = np.where(np.isin(tracked_ids, filtered_ids))[0]
@@ -69,10 +62,13 @@ class VideoStreamHandler:
                  
             # density = self.density_manager.calculate_density(results["prediction"])
             density = None
-            plot = custom_plot(frame, tracked_objects)  # Bounding box 그리기
+            plot = draw_tracking_boxes(frame, tracked_objects)  # Bounding box 그리기
             self.result_queue.put({'plot': plot, 'density': density})
 
-    def start_stream(self, camera_height):
+    def start_stream(self, output_path="results/predict/video/predict.mp4"):
+        save_dir = os.path.dirname(output_path)
+        os.makedirs(save_dir, exist_ok=True)
+
         # 각 프로세스가 독립적이기 때문에 
         # 데이터를 주고받으려면 공유 가능한 큐를 미리 생성해야 함
         self.frame_queue = Queue(maxsize=20)
@@ -81,21 +77,22 @@ class VideoStreamHandler:
         process = Process(target=self.process_frames)
         process.start()
         
-        self.cap = cv2.VideoCapture(self.video_path)
-        if not self.cap.isOpened():
+        cap = cv2.VideoCapture(self.video_path)
+        if not cap.isOpened():
             raise ValueError(f"Unable to open video file: {self.video_path}")
-        fps = int(self.cap.get(cv2.CAP_PROP_FPS))
+        fps = int(cap.get(cv2.CAP_PROP_FPS))
         self.graph_update_interval = max(1, fps // 2)  # 0.5초 간격으로 그래프 업데이트
-        frame_width = int(self.cap.get(cv2.CAP_PROP_FRAME_WIDTH))
-        frame_height = int(self.cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
-        self.video_writer = cv2.VideoWriter(self.output_video, cv2.VideoWriter_fourcc(*'mp4v'), fps, (frame_width, frame_height))
+        frame_width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+        frame_height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+        video_writer = cv2.VideoWriter(output_path, cv2.VideoWriter_fourcc(*'mp4v'), fps, (frame_width, frame_height))
 
-        self.density_manager = DensityManager(frame_height, camera_height)
-        self.pyplot_manager = PlotManager(fps)
+        if self.density_manager is None or self.pyplot_manager is None:
+            self.density_manager = DensityManager(frame_height, self.camera_height)
+            self.pyplot_manager = PlotManager(fps)  
 
         try:
-            while self.cap.isOpened():
-                ret, frame = self.cap.read()
+            while cap.isOpened():
+                ret, frame = cap.read()
                 if not ret:
                     break
                 
@@ -116,7 +113,7 @@ class VideoStreamHandler:
                         continue
                     if result is None:
                         break
-                    self.video_writer.write(result['plot'])
+                    video_writer.write(result['plot'])
                     cv2.imshow("YOLO Stream", result['plot'])
 
                     # if self.frame_count % self.graph_update_interval == 0:
@@ -128,29 +125,17 @@ class VideoStreamHandler:
             print(f"[ERROR] {e}")
 
         finally:
-            # 종료 신호는 여기가 적절
             self.frame_queue.put(None)
             process.join(timeout=5)
             if process.is_alive():
                 process.terminate()
-            self.close_stream()
-
-    def close_stream(self):
-        print("Releasing resources...")
-        try:
-            while not self.frame_queue.empty():
-                self.frame_queue.get_nowait()
-            while not self.result_queue.empty():
-                self.result_queue.get_nowait()
-        except Exception as e:
-            print(f"Queue cleanup error: {e}")
-        self.frame_queue.close()
-        self.result_queue.close()
-        self.frame_queue.join_thread()
-        self.result_queue.join_thread()
-        self.pyplot_manager.close()
-        self.cap.release()
-        self.video_writer.release()
-        cv2.destroyAllWindows()
-        print("Processing complete. Exiting program...")
-
+            self.frame_queue.close()
+            self.result_queue.close()
+            self.frame_queue.join_thread()
+            self.result_queue.join_thread()
+            self.pyplot_manager.close()
+            cap.release()
+            video_writer.release()
+            cv2.destroyAllWindows()
+            print("Processing complete. Exiting program...")
+        

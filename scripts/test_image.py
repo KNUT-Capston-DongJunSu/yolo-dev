@@ -1,7 +1,7 @@
-from densEstAI import predict_img
+from densEstAI import inference_image
 
 if __name__=="__main__":
-    predict_img(
+    inference_image(
         # "results/train/weights/best.pt",
         "SCUT_HEAD.pt",
         "datasets/test/SCUT-HEAD", 

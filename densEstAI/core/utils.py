@@ -1,4 +1,6 @@
-import cv2, os
+import os
+import cv2 
+import glob
 import numpy as np
 from ultralytics import YOLO
 from collections import deque
@@ -6,7 +8,7 @@ from PIL import Image, ImageDraw
 
 track_hist = {}
 
-def update_tracks(tracks):
+def filter_tracks_by_class(tracks):
     # tracks: 리스트 of dict {id, x, y, w, h} 현재 프레임 정보
     filtered_ids = []
     for obj in tracks:
@@ -38,7 +40,7 @@ def update_tracks(tracks):
     return np.array(filtered_ids).astype(int)
 
 
-def custom_plot(frame, tracked_objects):
+def draw_tracking_boxes(frame, tracked_objects):
     """Bounding box와 트래킹 ID 표시"""
     original_img = frame.copy()
     height, width = original_img.shape[:2]
@@ -69,8 +71,7 @@ def custom_plot(frame, tracked_objects):
     
     return original_img
 
-
-def predict_img(model_path, img_path, output_dir):    
+def inference_image(model_path, img_path, output_dir):    
     os.makedirs(output_dir, exist_ok=True)
     
     model = YOLO(model_path)     
@@ -105,3 +106,8 @@ def img_shape(image_path):
     img = Image.open(image_path)
     width, height = img.size
     print(f"이미지 크기: {width}x{height}")
+
+def get_best_model(weights_dir):
+    best_model = os.path.join(weights_dir, "best.pt")
+    return best_model if os.path.exists(best_model) else None
+
