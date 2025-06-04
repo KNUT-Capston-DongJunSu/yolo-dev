@@ -12,25 +12,27 @@ from densEstAI.core.utils import filter_tracks_by_class
 from densEstAI.core.utils import get_best_model
 
 class VideoStreamHandler:
-    def __init__(self, video_path, model_path="results/train/weights", camera_height=3.0):
+    def __init__(self, video_path, model_path, camera_height=3.0):
         self.video_path = video_path
+        self.model_path = model_path
 
         self.frame_queue = None
         self.result_queue = None    
+        self.model = None
         self.density_manager = None 
         self.pyplot_manager = None    
         self.frame_count = 0  # 프레임 카운터
         self.camera_height = camera_height
 
         self.tracker = OCSort(det_thresh=0.3, max_age=30, min_hits=3)
-        self.model = YoloAPI(get_best_model(model_path))
-
+        
     def process_frames(self):
         """프레임을 YOLO로 처리하고 결과를 큐에 저장"""
+        self.model = YoloAPI(self.model_path)
+
         while True:
             frame, frame_id = self.frame_queue.get()
             if frame is None:  
-                self.result_queue.put(None)
                 break
             
             rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
@@ -40,7 +42,7 @@ class VideoStreamHandler:
                 half=True,
                 stream=False
             )
-
+            print(results)
             # YOLO 예측 결과 -> SORT 트래커에 입력
             boxes = results['prediction']['boxes']
             confidences = results['prediction']['scores']  # 실제 confidence 사용
@@ -59,11 +61,11 @@ class VideoStreamHandler:
                 #     tracked_ids = tracked_objects[:, 4].astype(int)
                 #     indices = np.where(np.isin(tracked_ids, filtered_ids))[0]
                 #     tracked_objects = tracked_objects[indices] 
-                 
+            print(tracked_objects)
             # density = self.density_manager.calculate_density(results["prediction"])
             density = None
             plot = draw_tracking_boxes(frame, tracked_objects)  # Bounding box 그리기
-            self.result_queue.put({'plot': plot, 'density': density})
+            self.result_queue.put((plot, density))
 
     def start_stream(self, output_path="results/predict/video/predict.mp4"):
         save_dir = os.path.dirname(output_path)
@@ -71,8 +73,8 @@ class VideoStreamHandler:
 
         # 각 프로세스가 독립적이기 때문에 
         # 데이터를 주고받으려면 공유 가능한 큐를 미리 생성해야 함
-        self.frame_queue = Queue(maxsize=20)
-        self.result_queue = Queue(maxsize=20)
+        self.frame_queue = Queue(maxsize=50)
+        self.result_queue = Queue(maxsize=50)
         
         process = Process(target=self.process_frames)
         process.start()
@@ -88,7 +90,7 @@ class VideoStreamHandler:
 
         if self.density_manager is None or self.pyplot_manager is None:
             self.density_manager = DensityManager(frame_height, self.camera_height)
-            self.pyplot_manager = PlotManager(fps)  
+            self.pyplot_manager = PlotManager(fps) 
 
         try:
             while cap.isOpened():
@@ -97,8 +99,8 @@ class VideoStreamHandler:
                     break
                 
                 self.frame_count += 1
-                if self.frame_count % 10 != 0:
-                    continue
+                # if self.frame_count % 3 != 0:
+                #     continue
                 
                 try:
                     self.frame_queue.put((frame, self.frame_count), timeout=1)
@@ -113,8 +115,8 @@ class VideoStreamHandler:
                         continue
                     if result is None:
                         break
-                    video_writer.write(result['plot'])
-                    cv2.imshow("YOLO Stream", result['plot'])
+                    video_writer.write(result[0])
+                    cv2.imshow("YOLO Stream", result[0])
 
                     # if self.frame_count % self.graph_update_interval == 0:
                         # self.pyplot_manager.update_Live_pyplot(result['density'])
@@ -126,6 +128,7 @@ class VideoStreamHandler:
 
         finally:
             self.frame_queue.put(None)
+            self.result_queue.put(None)
             process.join(timeout=5)
             if process.is_alive():
                 process.terminate()

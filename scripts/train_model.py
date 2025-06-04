@@ -1,10 +1,13 @@
-from densEstAI import train_yolo
+import os
+import sys
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+from densEstAI import YoloAPI
 
 if __name__=="__main__":
-    train_yolo(
-        model_path="yolov8s.pt",
-        config_path="configs/custom.yaml",
-        epochs=5,
+    model = YoloAPI(model_path="yolov8s.pt")
+    model.train_yolo(
+        config_path="config/custom.yaml",
+        epochs=13,
         imgsz=640,
         batch=12,
         resume=False, 

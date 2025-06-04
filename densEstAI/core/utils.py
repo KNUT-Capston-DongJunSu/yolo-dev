@@ -110,4 +110,3 @@ def img_shape(image_path):
 def get_best_model(weights_dir):
     best_model = os.path.join(weights_dir, "best.pt")
     return best_model if os.path.exists(best_model) else None
-
