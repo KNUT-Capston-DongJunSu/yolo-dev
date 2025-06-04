@@ -1,2 +1,2 @@
-from .video_example import VideoStreamHandler
-from .app.yolo_utils import predict_yolo, train_yolo
+from .core.yolo_api import predict_yolo, train_yolo
+from .core.utils import predict_img
