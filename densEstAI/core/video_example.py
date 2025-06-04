@@ -22,11 +22,15 @@ class VideoStreamHandler:
         self.result_queue = None        
         self.frame_count = 0  # 프레임 카운터
 
+<<<<<<< HEAD:src/video_example.py
         self.tracker = OCSort(  # OCSort 객체 초기화
             det_thresh=0.3,  
             max_age=30,
             min_hits=3
         )
+=======
+        self.tracker = OCSort(det_thresh=det_thresh, max_age=30, min_hits=3)
+>>>>>>> fd3753b3b4c3089aea86ce3d060bfe0ab5cf6c83:densEstAI/core/video_example.py
 
     def process_frames(self):
         """프레임을 YOLO로 처리하고 결과를 큐에 저장"""
