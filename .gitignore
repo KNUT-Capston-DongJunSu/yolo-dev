@@ -1,4 +1,7 @@
 /**/__pycache__
-*.pt
-results/
 datasets/
+results/predict/**/*.mp4
+results/predict/**/*.jpg
+yolov8s.pt
+yolo11n.pt
+SCUT_HEAD.pt
