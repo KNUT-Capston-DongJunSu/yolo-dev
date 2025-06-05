@@ -102,6 +102,19 @@ def inference_image(model_path, img_path, output_dir):
 
         cv2.imwrite(output_path, original_img)
 
+def tracking_object(tracker, tracker_input, frame_id):
+    if tracker_input.shape[0] == 0:
+        tracked_objects = []  # 또는 빈 텐서 등, 트래커가 처리할 수 없는 빈 입력에 대비
+    else:
+        tracked_objects = tracker.update(tracker_input, frame_id)
+        filtered_ids = filter_tracks_by_class(tracked_objects)
+        if len(filtered_ids) != 0:
+            tracked_ids = tracked_objects[:, 4].astype(int)
+            indices = np.where(np.isin(tracked_ids, filtered_ids))[0]
+            tracked_objects = tracked_objects[indices] 
+
+    return tracked_objects
+
 def img_shape(image_path):
     img = Image.open(image_path)
     width, height = img.size
@@ -110,3 +123,6 @@ def img_shape(image_path):
 def get_best_model(weights_dir):
     best_model = os.path.join(weights_dir, "best.pt")
     return best_model if os.path.exists(best_model) else None
+
+def detect_display():
+    return "DISPLAY" in os.environ and os.environ["DISPLAY"]

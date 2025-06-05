@@ -43,7 +43,7 @@ class DensityManager:
 
     def extract_object_dimensions(self, predictions):
         results = []
-        for box in predictions["boxes"]:
+        for box in predictions:
             y_min, y_max = box[1], box[3]  # y_min, y_max 추출
             y_bottom = y_max
             pixel_height = y_max - y_min
