@@ -8,6 +8,8 @@ from densEstAI.core.plot_dens import PlotManager
 from densEstAI.core.yolo_api import YoloAPI
 from densEstAI.core.utils import draw_tracking_boxes
 from densEstAI.core.utils import tracking_object
+from densEstAI.core.utils import transform_yolo2track
+from densEstAI.core.utils import track_hist
 
 def start_stream(video_path, model_path, output_path="results/predict/video/predict.mp4", camera_height=3.0):
     frame_id = 0
@@ -37,7 +39,12 @@ def start_stream(video_path, model_path, output_path="results/predict/video/pred
             #     continue
 
             results = model.smart_predict_yolo(frame=frame, conf=0.07, save=False, half=True, stream=False)
-            tracked_objects = tracking_object(tracker, results, frame_id)
+            transformed_results = transform_yolo2track(results, track_hist)
+            if len(transformed_results) < len(track_hist):
+                input = track_hist
+            else:
+                input = transformed_results
+            tracked_objects = tracking_object(tracker, input, frame_id)
             density = density_manager.calculate_density(results)
             plot = draw_tracking_boxes(frame, tracked_objects)  # Bounding box 그리기
 
