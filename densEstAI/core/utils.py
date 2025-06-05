@@ -51,7 +51,7 @@ def draw_tracking_boxes(frame, tracked_objects):
             original_img, 
             (x1, y1), (x2, y2), 
             color=(255, 0, 0), 
-            thickness=1
+            thickness=2
             )
         cv2.putText(
             original_img, 
