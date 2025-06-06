@@ -6,21 +6,12 @@ from ultralytics import YOLO
 from collections import deque
 from PIL import Image, ImageDraw
 
-
-<<<<<<< HEAD
 def filter_tracks_by_class(track_hist, tracks):
-=======
-def filter_tracks_by_class(tracks):
->>>>>>> 07789bdcb9077836fde309233581de72f38808fb
     # tracks: 리스트 of [x1, y1, x2, y2, id]
     filtered_ids = []
 
     for obj in tracks:
-<<<<<<< HEAD
         x1, y1, x2, y2, track_id, *rest = obj
-=======
-        x1, y1, x2, y2, track_id = obj
->>>>>>> 07789bdcb9077836fde309233581de72f38808fb
         bbox = [x1, y1, x2, y2]
 
         # 기록 저장
@@ -50,7 +41,6 @@ def filter_tracks_by_class(tracks):
 
     return np.array(filtered_ids).astype(int)
 
-<<<<<<< HEAD
 def tracking_object(tracker, tracker_input, frame_id):
     print(tracker_input)
     if len(tracker_input) == 0:
@@ -66,27 +56,6 @@ def tracking_object(tracker, tracker_input, frame_id):
             tracked_objects = tracked_objects[indices] 
 
     return tracked_objects
-
-def transform_yolo2track(track_data, maxlen=10):
-    results = {}
-    for i, obj in enumerate(track_data):
-        x1, y1, x2, y2, *rest = obj
-        bbox = [x1, y1, x2, y2]
-        track_id = len(track_data)-i
-        if track_id not in results:
-=======
-def transform_yolo2track(track_data, maxlen=10):
-    results = {}
-    for obj in track_data:
-        x1, y1, x2, y2, track_id = obj
-        bbox = [x1, y1, x2, y2]
-
-        if track_id not in track_hist:
->>>>>>> 07789bdcb9077836fde309233581de72f38808fb
-            results[track_id] = deque(maxlen=maxlen)
-
-        results[track_id].append(bbox)
-    return results
 
 def draw_tracking_boxes(frame, tracked_objects):
     """Bounding box와 트래킹 ID 표시"""
