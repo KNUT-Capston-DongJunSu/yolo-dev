@@ -22,6 +22,8 @@ class YoloAPI:
         )
 
     def smart_predict_yolo(self, frame, stream=False, imgsz=640, conf=0.5, iou=0.7, max_det=300, **kwargs):
+        rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+        
         result = self.model.predict(
             source=frame,
             stream=stream,
@@ -56,21 +58,16 @@ class YoloAPI:
         filtered_boxes = boxes[boxes.cls == target_cls]
         
         boxes = filtered_boxes.xyxy
-        scores = filtered_boxes.conf
-        classes = filtered_boxes.cls
+        confidences = filtered_boxes.conf
+        class_ids = filtered_boxes.cls
 
         if isinstance(boxes, torch.Tensor): boxes = boxes.tolist()
-        if isinstance(scores, torch.Tensor): scores = scores.tolist()
+        if isinstance(confidences, torch.Tensor): confidences = confidences.tolist()
         if isinstance(classes, torch.Tensor): classes = classes.tolist()
-
-        plot = result.plot()
         
-        return {"prediction": {
-                    "boxes": boxes,
-                    "scores": scores,
-                    "classes": classes
-                },
-                "plot": plot} 
+        data_list = [box + [conf, cls] for box, conf, cls in zip(boxes, confidences, class_ids)]
+        results = torch.tensor(data_list, dtype=torch.float32)
+        return results
 
     
         
