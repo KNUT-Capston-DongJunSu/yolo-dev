@@ -1,7 +1,11 @@
-import cv2
 import os
-from PIL import Image
+import sys
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
+import os
+import cv2
 import numpy as np
+from PIL import Image
 
 image_folder = './datasets/test/market/'
 output_video = 'output_video.mp4'

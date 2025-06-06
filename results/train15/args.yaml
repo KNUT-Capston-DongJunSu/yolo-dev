@@ -1,14 +1,8 @@
 task: detect
 mode: train
-<<<<<<< HEAD
 model: yolov8s.pt
 data: config/custom.yaml
 epochs: 13
-=======
-model: results/train152/weights/last.pt
-data: config/custom.yaml
-epochs: 30
->>>>>>> 07789bdcb9077836fde309233581de72f38808fb
 time: null
 patience: 100
 batch: 12
@@ -19,11 +13,7 @@ cache: false
 device: '0'
 workers: 8
 project: results
-<<<<<<< HEAD
-name: train152
-=======
 name: train15
->>>>>>> 07789bdcb9077836fde309233581de72f38808fb
 exist_ok: false
 pretrained: true
 optimizer: SGD

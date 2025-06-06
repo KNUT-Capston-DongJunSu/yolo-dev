@@ -5,12 +5,12 @@ import threading
 import queue
 from ocsort import OCSort
 import numpy as np
-from densEstAI.core.calc_density import DensityManager
-from densEstAI.core.plot_dens import PlotManager
-from densEstAI.core.yolo_api import YoloAPI
-from densEstAI.core.utils import draw_tracking_boxes
-from densEstAI.core.utils import tracking_object
-from densEstAI.core.utils import detect_display
+from densEstAI.core.plotter import DensityPlotter
+from densEstAI.yolo.yolo_manager import YoloManager
+from densEstAI.core.density_estimator import DensityEstimator
+from densEstAI.utils.common import detect_display
+from densEstAI.utils.tracking import tracking_object
+from densEstAI.utils.drawing_boxes import draw_tracking_boxes
 
 def reader_thread(cap, frame_queue):
     while cap.isOpened():
@@ -60,10 +60,10 @@ def main(video_path, model_path, output_path="results/predict/video/predict.mp4"
     video_writer = cv2.VideoWriter(output_path, cv2.VideoWriter_fourcc(*'mp4v'), fps, (frame_width, frame_height))
 
     # 모델/관리자 초기화
-    model = YoloAPI(model_path)
+    model = YoloManager(model_path)
     tracker = OCSort(det_thresh=0.3, max_age=30, min_hits=3)
-    density_manager = DensityManager(frame_height, camera_height)
-    pyplot_manager = PlotManager(fps)
+    density_manager = DensityEstimator(frame_height, camera_height)
+    pyplot_manager = DensityPlotter(fps)
 
     # 큐 선언
     frame_queue = queue.Queue(maxsize=5)

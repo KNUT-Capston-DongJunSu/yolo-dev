@@ -1,7 +1,11 @@
-from densEstAI import inference_image
+import os
+import sys
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
+from densEstAI.utils import run_inference 
 
 if __name__=="__main__":
-    inference_image(
+    run_inference(
         # "results/train/weights/best.pt",
         "SCUT_HEAD.pt",
         "datasets/test/SCUT-HEAD", 

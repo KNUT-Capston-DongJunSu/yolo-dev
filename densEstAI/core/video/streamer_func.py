@@ -1,14 +1,10 @@
 import cv2
 import os
-import torch
 from ocsort import OCSort
-import numpy as np
-from densEstAI.core.calc_density import DensityManager
-from densEstAI.core.plot_dens import PlotManager
-from densEstAI.core.yolo_api import YoloAPI
-from densEstAI.core.utils import draw_tracking_boxes
-from densEstAI.core.utils import tracking_object
-from densEstAI.core.utils import transform_yolo2track
+from densEstAI.core.plotter import DensityPlotter
+from densEstAI.yolo.yolo_manager import YoloManager
+from densEstAI.core.density_estimator import DensityEstimator
+from densEstAI.utils.drawing_boxes import draw_tracking_boxes
 
 def start_stream(video_path, model_path, output_path="results/predict/video/predict.mp4", camera_height=3.0, scale=1):
     track_hist = []
@@ -24,9 +20,9 @@ def start_stream(video_path, model_path, output_path="results/predict/video/pred
     video_writer = cv2.VideoWriter(output_path, cv2.VideoWriter_fourcc(*'mp4v'), fps, (frame_width, frame_height))
 
     tracker = OCSort(det_thresh=0.3, max_age=30, min_hits=3)
-    model = YoloAPI(model_path)
-    density_manager = DensityManager(camera_height, frame_height)
-    pyplot_manager = PlotManager(fps) 
+    model = YoloManager(model_path)
+    density_manager = DensityEstimator(camera_height, frame_height)
+    pyplot_manager = DensityPlotter(fps) 
 
     try:
         while cap.isOpened():
