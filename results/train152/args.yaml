@@ -1,8 +1,8 @@
 task: detect
 mode: train
-model: results/train152/weights/last.pt
+model: yolov8s.pt
 data: config/custom.yaml
-epochs: 17
+epochs: 20
 time: null
 patience: 100
 batch: 12
@@ -13,7 +13,7 @@ cache: false
 device: '0'
 workers: 8
 project: results
-name: train153
+name: train152
 exist_ok: false
 pretrained: true
 optimizer: SGD
@@ -102,4 +102,4 @@ auto_augment: randaugment
 erasing: 0.4
 cfg: null
 tracker: botsort.yaml
-save_dir: results\train153
+save_dir: results\train152

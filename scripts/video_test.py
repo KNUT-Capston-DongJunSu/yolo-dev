@@ -1,11 +1,17 @@
+<<<<<<< HEAD
 import os
 import sys
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-from densEstAI.core.video_example import VideoStreamHandler
-from densEstAI.core.video_example_func import start_stream
+
+=======
+from densEstAI.utils import move_to_root_path
+move_to_root_path()
+>>>>>>> 0f57c93f52dcd4d3a1eb8133836acdf90a09c67a
+from densEstAI.core import VideoStreamer
+from densEstAI.core import start_stream
 
 def main_process():
-    video_handler = VideoStreamHandler(video_path="./datasets/test/video/test3.mp4", model_path="./results/train/weights/best.pt", camera_height=3.0)
+    video_handler = VideoStreamer(video_path="./datasets/test/video/test3.mp4", model_path="./results/train/weights/best.pt", camera_height=3.0)
     video_handler.start_stream(output_path="./results/predict/video/our_model_default.mp4")
 
 if __name__=='__main__':
