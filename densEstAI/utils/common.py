@@ -6,8 +6,6 @@ def move_to_root_path():
     import sys
     sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
->>>>>>> 0f57c93f52dcd4d3a1eb8133836acdf90a09c67a
->>>>>>> d24eca896ff128d8f6e28fd20793b02bb2561fb0
 def img_shape(image_path):
     img = Image.open(image_path)
     width, height = img.size
