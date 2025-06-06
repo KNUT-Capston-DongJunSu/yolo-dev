@@ -2,6 +2,9 @@
 datasets/
 results/predict/**/*.mp4
 results/predict/**/*.jpg
+results/**/*.jpg
+results/**/*.png
+results/**/*.csv
 yolov8s.pt
 yolo11n.pt
 SCUT_HEAD.pt

@@ -6,14 +6,13 @@ from ultralytics import YOLO
 from collections import deque
 from PIL import Image, ImageDraw
 
-track_hist = {}
 
-def filter_tracks_by_class(tracks):
+def filter_tracks_by_class(track_hist, tracks):
     # tracks: 리스트 of [x1, y1, x2, y2, id]
     filtered_ids = []
 
     for obj in tracks:
-        x1, y1, x2, y2, track_id = obj
+        x1, y1, x2, y2, track_id, *rest = obj
         bbox = [x1, y1, x2, y2]
 
         # 기록 저장
@@ -43,13 +42,29 @@ def filter_tracks_by_class(tracks):
 
     return np.array(filtered_ids).astype(int)
 
+def tracking_object(tracker, tracker_input, frame_id):
+    print(tracker_input)
+    if len(tracker_input) == 0:
+        tracked_objects = []  # 또는 빈 텐서 등, 트래커가 처리할 수 없는 빈 입력에 대비
+    else:
+        tracked_objects = tracker.update(tracker_input, frame_id)
+        print(tracked_objects)
+        filtered_ids = filter_tracks_by_class(tracked_objects)
+        print(tracked_objects)
+        if len(filtered_ids) != 0:
+            tracked_ids = tracked_objects[:, 4].astype(int)
+            indices = np.where(np.isin(tracked_ids, filtered_ids))[0]
+            tracked_objects = tracked_objects[indices] 
+
+    return tracked_objects
+
 def transform_yolo2track(track_data, maxlen=10):
     results = {}
-    for obj in track_data:
-        x1, y1, x2, y2, track_id = obj
+    for i, obj in enumerate(track_data):
+        x1, y1, x2, y2, *rest = obj
         bbox = [x1, y1, x2, y2]
-
-        if track_id not in track_hist:
+        track_id = len(track_data)-i
+        if track_id not in results:
             results[track_id] = deque(maxlen=maxlen)
 
         results[track_id].append(bbox)
@@ -57,6 +72,9 @@ def transform_yolo2track(track_data, maxlen=10):
 
 def draw_tracking_boxes(frame, tracked_objects):
     """Bounding box와 트래킹 ID 표시"""
+    if len(tracked_objects) == 0:
+        return frame
+    
     original_img = frame.copy()
     height, width = original_img.shape[:2]
 
@@ -79,7 +97,7 @@ def draw_tracking_boxes(frame, tracked_objects):
     cv2.putText(
         original_img, 
         f"{len(tracked_objects)} people", 
-        (width - 200, 30), 
+        (width-200, height-30), 
         cv2.FONT_HERSHEY_SIMPLEX, 
         1, (255, 255, 255), 2
         )
@@ -116,19 +134,6 @@ def inference_image(model_path, img_path, output_dir):
         output_path = os.path.join(output_dir, output_filename)
 
         cv2.imwrite(output_path, original_img)
-
-def tracking_object(tracker, tracker_input, frame_id):
-    if tracker_input.shape[0] == 0:
-        tracked_objects = []  # 또는 빈 텐서 등, 트래커가 처리할 수 없는 빈 입력에 대비
-    else:
-        tracked_objects = tracker.update(tracker_input, frame_id)
-        filtered_ids = filter_tracks_by_class(tracked_objects)
-        if len(filtered_ids) != 0:
-            tracked_ids = tracked_objects[:, 4].astype(int)
-            indices = np.where(np.isin(tracked_ids, filtered_ids))[0]
-            tracked_objects = tracked_objects[indices] 
-
-    return tracked_objects
 
 def img_shape(image_path):
     img = Image.open(image_path)

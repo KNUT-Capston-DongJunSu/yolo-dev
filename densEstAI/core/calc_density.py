@@ -62,7 +62,6 @@ class DensityManager:
             
             # 카메라와 객체 간 거리 계산
             camera_distance = self.calculate_camera_distance(y_bottom)
-            
             # 객체 실제 높이 계산
             real_height = self.calculate_real_height(pixel_height, camera_distance)
             object_heights.append(real_height)
