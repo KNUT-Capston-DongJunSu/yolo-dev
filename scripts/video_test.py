@@ -1,7 +1,12 @@
+<<<<<<< HEAD
 import os
 import sys
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
+=======
+from densEstAI.utils import move_to_root_path
+move_to_root_path()
+>>>>>>> 0f57c93f52dcd4d3a1eb8133836acdf90a09c67a
 from densEstAI.core import VideoStreamer
 from densEstAI.core import start_stream
 
