@@ -1,14 +1,7 @@
-<<<<<<< HEAD
 import os
 import sys
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-import os
-=======
-from densEstAI.utils import move_to_root_path
-move_to_root_path()
-import os
->>>>>>> 0f57c93f52dcd4d3a1eb8133836acdf90a09c67a
 import cv2
 import numpy as np
 from PIL import Image
