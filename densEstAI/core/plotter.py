@@ -11,9 +11,9 @@ class DensityPlotter:
     # 설정: 표시할 데이터의 최대 길이
     max_length = 100  # x축에 표시할 데이터 수
     
-    def __init__(self, fps, video_filename="results/predict/video/graph_output.mp4"):
+    def __init__(self, video_fps, video_filename="results/predict/video/graph_output.mp4"):
         # 그래프 초기 설정
-        self.video_fps = fps
+        self.video_fps = video_fps
 
         self.fig, self.ax = plt.subplots()
         self.x_data = deque(maxlen=self.max_length)  # 고정 길이 큐 (최대 max_length 개 유지)

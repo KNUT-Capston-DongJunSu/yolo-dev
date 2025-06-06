@@ -36,7 +36,7 @@ def filter_tracks_by_class(track_hist, tracks):
 
     return np.array(filtered_ids).astype(int)
 
-def tracking_object(tracker, tracker_input, frame_id):
+def tracking_object_filtered(tracker, tracker_input, frame_id):
     if len(tracker_input) == 0:
         tracked_objects = []  # 또는 빈 텐서 등, 트래커가 처리할 수 없는 빈 입력에 대비
     else:
@@ -48,3 +48,14 @@ def tracking_object(tracker, tracker_input, frame_id):
             tracked_objects = tracked_objects[indices] 
 
     return tracked_objects
+
+def tracking_object(tracker, tracker_input, track_hist, frame_id):
+    if len(tracker_input) == 0:
+        track_hist = []
+    else:
+        if len(tracker_input) < len(track_hist):
+            track_hist = tracker.update(track_hist, frame_id)
+        else:
+            track_hist = tracker.update(tracker_input, frame_id)
+            # tracked_objects = tracking_object(tracker, results, frame_id)
+    return track_hist

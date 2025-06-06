@@ -1,14 +1,15 @@
+import cv2
 import math
 
 class DensityEstimator:
-    def __init__(self, camera_height, frame_height):
+    def __init__(self, frame_height, camera_height):
         # Pi Camera 기본 시야각
         self.fov_horizontal = 65  # degrees
         self.fov_vertical = 49  # degrees
 
         # 카메라 높이 및 해상도
         self.camera_height = camera_height  # 카메라 높이 (m)
-        self.frame_height = frame_height  # 실제 프레임 높이
+        self.frame_height = frame_height
 
         # 초기값 설정
         self.alpha = 0.8  # 지수 이동 평균 가중치
