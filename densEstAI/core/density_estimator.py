@@ -1,6 +1,6 @@
 import math
 
-class DensityManager:
+class DensityEstimator:
     def __init__(self, camera_height, frame_height):
         # Pi Camera 기본 시야각
         self.fov_horizontal = 65  # degrees

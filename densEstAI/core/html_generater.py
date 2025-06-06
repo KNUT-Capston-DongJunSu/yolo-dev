@@ -1,8 +1,8 @@
-import json
 import os
+import json
 from datetime import datetime
 
-class HtmlManager:
+class HtmlGenerator:
     def __init__(self, template_path="template/template.html", output_path="FTP_files/index.html", json_path="template/tr_td_data.json"):
         self.template_path = template_path
         self.output_path = output_path

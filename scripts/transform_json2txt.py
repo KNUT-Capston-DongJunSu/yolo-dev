@@ -1,3 +1,5 @@
+from densEstAI.utils import move_to_root_path
+move_to_root_path()
 import os
 import json
 from PIL import Image

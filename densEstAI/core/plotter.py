@@ -1,12 +1,12 @@
-import matplotlib.pyplot as plt
-import matplotlib.dates as mdates
+import cv2
+import sys  # sys 모듈 추가
+import numpy as np
 from datetime import datetime
 from collections import deque
-import cv2
-import numpy as np
-import sys  # sys 모듈 추가
+import matplotlib.pyplot as plt
+import matplotlib.dates as mdates
 
-class PlotManager:
+class DensityPlotter:
     
     # 설정: 표시할 데이터의 최대 길이
     max_length = 100  # x축에 표시할 데이터 수

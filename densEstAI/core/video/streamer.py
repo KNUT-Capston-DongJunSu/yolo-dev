@@ -2,16 +2,14 @@ import cv2
 import os
 import torch
 from ocsort import OCSort
-from queue import Empty, Full
-from multiprocessing import Process, Queue
-from densEstAI.core.calc_density import DensityManager
-from densEstAI.core.plot_dens import PlotManager
-from densEstAI.core.yolo_api import YoloAPI
-from densEstAI.core.utils import draw_tracking_boxes
-from densEstAI.core.utils import filter_tracks_by_class 
-from densEstAI.core.utils import get_best_model
+from densEstAI.core.plotter import DensityPlotter
+from densEstAI.yolo.yolo_manager import YoloManager
+from densEstAI.core.density_estimator import DensityEstimator
+from densEstAI.utils.common import get_best_model
+from densEstAI.utils.tracking import filter_tracks_by_class 
+from densEstAI.utils.drawing_boxes import draw_tracking_boxes
 
-class VideoStreamHandler:
+class VideoStreamer:
     def __init__(self, video_path, model_path, camera_height=3.0):
         self.video_path = video_path
         self.model_path = model_path
@@ -25,7 +23,7 @@ class VideoStreamHandler:
         self.camera_height = camera_height
 
         self.tracker = OCSort(det_thresh=0.3, max_age=30, min_hits=3)
-        self.model = YoloAPI(self.model_path)
+        self.model = YoloManager(self.model_path)
     
     def start_stream(self, output_path="results/predict/video/predict.mp4"):
         save_dir = os.path.dirname(output_path)
@@ -41,8 +39,8 @@ class VideoStreamHandler:
         video_writer = cv2.VideoWriter(output_path, cv2.VideoWriter_fourcc(*'mp4v'), fps, (frame_width, frame_height))
 
         if self.density_manager is None or self.pyplot_manager is None:
-            self.density_manager = DensityManager(frame_height, self.camera_height)
-            self.pyplot_manager = PlotManager(fps) 
+            self.density_manager = DensityEstimator(frame_height, self.camera_height)
+            self.pyplot_manager = DensityPlotter(fps) 
 
         try:
             while cap.isOpened():

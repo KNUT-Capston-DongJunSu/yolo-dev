@@ -1,7 +1,9 @@
-import cv2
+from densEstAI.utils import move_to_root_path
+move_to_root_path()
 import os
-from PIL import Image
+import cv2
 import numpy as np
+from PIL import Image
 
 image_folder = './datasets/test/market/'
 output_video = 'output_video.mp4'

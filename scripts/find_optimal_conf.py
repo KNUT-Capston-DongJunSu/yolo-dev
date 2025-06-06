@@ -1,5 +1,7 @@
-from ultralytics import YOLO
+from densEstAI.utils import move_to_root_path
+move_to_root_path()
 import numpy as np
+from ultralytics import YOLO
 
 if __name__=='__main__':
     # 모델 로드

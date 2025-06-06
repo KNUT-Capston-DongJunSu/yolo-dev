@@ -1,7 +1,9 @@
-from densEstAI import inference_image
+from densEstAI.utils import move_to_root_path
+move_to_root_path()
+from densEstAI.utils import run_inference 
 
 if __name__=="__main__":
-    inference_image(
+    run_inference(
         # "results/train/weights/best.pt",
         "SCUT_HEAD.pt",
         "datasets/test/SCUT-HEAD", 
