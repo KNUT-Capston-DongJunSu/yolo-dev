@@ -2,7 +2,11 @@ task: detect
 mode: train
 model: results/train152/weights/last.pt
 data: config/custom.yaml
+<<<<<<< HEAD
 epochs: 17
+=======
+epochs: 7
+>>>>>>> 07789bdcb9077836fde309233581de72f38808fb
 time: null
 patience: 100
 batch: 12

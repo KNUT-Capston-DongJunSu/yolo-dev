@@ -53,16 +53,30 @@ class YoloAPI:
         return self.process_predicted_results(result)
     
     @staticmethod
+<<<<<<< HEAD
     def process_predicted_results(result):
         boxes = result.boxes.xyxy
         confidences = result.boxes.conf
         classes = result.boxes.cls
+=======
+    def process_predicted_results(result, target_cls=0):
+        boxes = result.boxes
+        filtered_boxes = boxes[boxes.cls == target_cls]
+        
+        boxes = filtered_boxes.xyxy
+        confidences = filtered_boxes.conf
+        class_ids = filtered_boxes.cls
+>>>>>>> 07789bdcb9077836fde309233581de72f38808fb
 
         if isinstance(boxes, torch.Tensor): boxes = boxes.tolist()
         if isinstance(confidences, torch.Tensor): confidences = confidences.tolist()
         if isinstance(classes, torch.Tensor): classes = classes.tolist()
         
+<<<<<<< HEAD
         data_list = [box + [conf, cls] for box, conf, cls in zip(boxes, confidences, classes)]
+=======
+        data_list = [box + [conf, cls] for box, conf, cls in zip(boxes, confidences, class_ids)]
+>>>>>>> 07789bdcb9077836fde309233581de72f38808fb
         results = torch.tensor(data_list, dtype=torch.float32)
         return results
 
