@@ -6,5 +6,6 @@ results/**/*.jpg
 results/**/*.png
 results/**/*.csv
 yolov8s.pt
+yolov8m.pt
 yolo11n.pt
-SCUT_HEAD.pt
+scut_head.pt
