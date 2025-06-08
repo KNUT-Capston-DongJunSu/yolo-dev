@@ -1,11 +1,6 @@
 import os
 from PIL import Image
 
-def move_to_root_path():
-    import os
-    import sys
-    sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-
 def img_shape(image_path):
     img = Image.open(image_path)
     width, height = img.size
