@@ -7,9 +7,9 @@ from densEstAI.core import start_stream
 if __name__=='__main__':
     start_stream(
         video_path="./datasets/test/video/test11.mp4", 
-        # model_path="./results/train2/weights/best.pt",
-        model_path="scut_head.pt",
-        output_name="predict_scut.mp4",
+        model_path="./results/train34/weights/best.pt",
+        # model_path="scut_head.pt",
+        output_name="predict_Msize.mp4",
         camera_height=2.7
         )
     
