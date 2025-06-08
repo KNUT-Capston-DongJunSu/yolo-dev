@@ -30,6 +30,7 @@ video_filename = "results/predict/video/graph_output.mp4"
 video_writer = None  # 동영상 writer 초기화
 
 def initialize_plotter():
+    global video_writer
     """VideoWriter 객체 초기화"""
     if video_writer is None:
         width, height = fig.canvas.get_width_height()

@@ -48,6 +48,7 @@ def _extract_object_dimensions(predictions):
     return results
 
 def calculate_density(predictions):
+    global previous_max_height
     # 프레임별 객체 바운딩 박스 정보 (실시간 시뮬레이션용)
     bounding_boxes = _extract_object_dimensions(predictions)
 
