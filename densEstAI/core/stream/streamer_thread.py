@@ -5,9 +5,9 @@ import threading
 import queue
 from ocsort import OCSort
 import numpy as np
-from densEstAI.core.plot.plotter import DensityPlotter
+from densEstAI.core.plot.plotter import update_live_density
 from densEstAI.core.yolo.yolo_manager import YoloManager
-from densEstAI.core.stream.density_estimation import DensityEstimator
+from densEstAI.core.stream.density_estimation import calculate_density
 from densEstAI.core.utils.tracking import tracking_object
 from densEstAI.core.utils.drawing_boxes import draw_tracking_boxes
 from densEstAI.utils.common import detect_display

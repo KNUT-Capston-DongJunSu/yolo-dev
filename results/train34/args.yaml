@@ -1,6 +1,6 @@
 task: detect
 mode: train
-model: yolov8m.pt
+model: results\train34\weights\last.pt
 data: config/custom.yaml
 epochs: 20
 time: null
@@ -24,7 +24,7 @@ single_cls: false
 rect: false
 cos_lr: false
 close_mosaic: 10
-resume: false
+resume: results\train34\weights\last.pt
 amp: true
 fraction: 1.0
 profile: false

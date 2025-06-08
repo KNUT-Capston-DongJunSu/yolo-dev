@@ -10,7 +10,6 @@ from densEstAI.core.utils.tracking import tracking_object
 from densEstAI.core.utils.drawing_boxes import draw_tracking_boxes
 from densEstAI.utils.common import detect_display
 
-
 scale = 1
 output_dir = "./results/predict/"
 os.makedirs(output_dir, exist_ok=True)
