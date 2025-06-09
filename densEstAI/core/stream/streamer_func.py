@@ -25,7 +25,7 @@ def initalize_object(video_path, output_name):
     return cap, video_writer, fps, frame_width, frame_height
     
 def app_core(model, tracker, frame, track_hist, frame_id):
-    results = model.smart_predict_yolo(frame=frame, conf=0.5, save=False, half=True, stream=False)
+    results = model.smart_predict_yolo(frame=frame, conf=0.05, save=False, half=True, stream=False)
     tracked_objects = tracking_object(tracker, results, frame_id)
     density = calculate_density(results)
     plot = draw_tracking_boxes(frame, tracked_objects)  # Bounding box 그리기
