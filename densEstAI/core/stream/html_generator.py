@@ -12,7 +12,6 @@ class HtmlGenerator:
         self.output_path = output_path
         self.json_path = json_path
 
-    # **4. 로그 데이터 추가**
     def add_progress_log(self, progress_logs, process_name, step_name, status, details, max_entries=100):
         """진행 로그 데이터 추가"""
         current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
@@ -30,7 +29,6 @@ class HtmlGenerator:
             progress_logs_rows = progress_logs_rows[-max_entries:]
         return "\n<tr>".join(progress_logs_rows)
 
-    # **5. 밀도 데이터 추가**
     def add_density_data(self, density_data, density, max_entries=100):
         """밀도 데이터 추가"""
         current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
@@ -45,7 +43,6 @@ class HtmlGenerator:
             density_data_rows = density_data_rows[-max_entries:]
         return "\n<tr>".join(density_data_rows)
 
-    # **7. 전체 실행 흐름**
     def append_html(self, process_name, step_name, status, details, density=None, max_entries=100):
         """전체 작업 실행"""
         # 템플릿 로드
