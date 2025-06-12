@@ -1,4 +1,7 @@
 import os
+import sys
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
 from densEstAI.utils import convert_odgt_to_yolo
 
 if __name__=="__main__":
@@ -11,7 +14,7 @@ if __name__=="__main__":
     ]
 
     for path in json_paths:
-        if '/datasets/labels/96.Indoor_북촌까페096(661)' in path or '/datasets/labels/208.Indoor_까페노아208(660).json' in path:
+        if '/datasets/labels/208.Indoor_까페노아208(660)' in path:
             convert_odgt_to_yolo(
                 odgt_path=path,
                 images_path="./datasets/images/val",
