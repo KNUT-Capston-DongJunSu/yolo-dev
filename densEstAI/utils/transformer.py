@@ -59,6 +59,62 @@ def convert_odgt_to_yolo(odgt_path, images_path, output_dir, class_ids={"fbox": 
         print(f"[Warning] 누락된 이미지: {len(mismatched_images)}개")
 
 
+import os
+import xml.etree.ElementTree as ET
+
+
+
+def voc_xmls_to_yolo_txts(xml_dir, output_dir, class_map={"person": 0}):
+    os.makedirs(output_dir, exist_ok=True)
+
+    xml_files = [f for f in os.listdir(xml_dir) if f.endswith('.xml')]
+    total_files = len(xml_files)
+    converted = 0
+
+    for xml_file in xml_files:
+        xml_path = os.path.join(xml_dir, xml_file)
+        try:
+            tree = ET.parse(xml_path)
+            root = tree.getroot()
+
+            size = root.find('size')
+            width = int(size.find('width').text)
+            height = int(size.find('height').text)
+
+            filename = root.find('filename').text
+            num_str = os.path.splitext(filename)[0]  # "11"
+            num = int(num_str)  # 숫자 변환
+            txt_filename = 'PartA_' + f'{num:05d}' + '.txt'
+            txt_path = os.path.join(output_dir, txt_filename)
+
+            with open(txt_path, 'w') as f:
+                for obj in root.findall('object'):
+                    cls_name = obj.find('name').text
+                    if cls_name not in class_map:
+                        continue
+
+                    cls_id = class_map[cls_name]
+
+                    bndbox = obj.find('bndbox')
+                    xmin = int(bndbox.find('xmin').text)
+                    ymin = int(bndbox.find('ymin').text)
+                    xmax = int(bndbox.find('xmax').text)
+                    ymax = int(bndbox.find('ymax').text)
+
+                    x_center = ((xmin + xmax) / 2) / width
+                    y_center = ((ymin + ymax) / 2) / height
+                    w = (xmax - xmin) / width
+                    h = (ymax - ymin) / height
+
+                    f.write(f"{cls_id} {x_center:.6f} {y_center:.6f} {w:.6f} {h:.6f}\n")
+            converted += 1
+
+        except Exception as e:
+            print(f"[Error] {xml_file} 변환 실패: {e}")
+
+    print(f"[완료] 총 {total_files}개 중 {converted}개 변환 성공")
+
+# 사용 예시
 
     
     
