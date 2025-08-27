@@ -2,7 +2,7 @@ import os
 import sys
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-from densEstAI.utils import convert_odgt_to_yolo
+from core.utils import convert_odgt_to_yolo
 
 if __name__=="__main__":
     folder_path = './datasets/labels/'  # 예: 'C:/Users/you/data'

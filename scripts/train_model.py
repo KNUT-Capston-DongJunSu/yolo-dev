@@ -2,7 +2,7 @@ import os
 import sys
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-from densEstAI.core import YoloManager  
+from core.core import YoloManager  
 
 if __name__=="__main__":
     model = YoloManager(model_path="yolov8m.pt")
