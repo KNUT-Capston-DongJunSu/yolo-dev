@@ -2,7 +2,7 @@ import os
 import sys
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-from modules import run_inference 
+from core.utils import run_inference 
 
 if __name__=="__main__":
     run_inference(
